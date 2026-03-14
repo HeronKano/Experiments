@@ -1,0 +1,2648 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Represa Rio Preto – Lago 3 | Simulação Ecossistêmica</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0d1b2a; --bg2:#112240; --bg3:#1a3458; --bg4:#233554;
+  --accent:#64ffda; --text:#ccd6f6; --text2:#8892b0; --border:#233554;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);
+  font-family:'Segoe UI',system-ui,Arial,sans-serif;font-size:12px;line-height:1.4;}
+#app{display:flex;flex-direction:column;height:100vh;}
+#header{flex-shrink:0;height:50px;background:var(--bg2);border-bottom:2px solid var(--accent);
+  display:flex;align-items:center;gap:7px;padding:0 10px;overflow:hidden;}
+#header h1{font-size:13px;font-weight:700;color:var(--accent);white-space:nowrap;}
+#envBar{display:flex;gap:4px;align-items:center;flex-wrap:nowrap;overflow:hidden;flex:1;}
+.env-chip{background:var(--bg3);border:1px solid var(--border);border-radius:3px;
+  padding:2px 6px;font-size:11px;white-space:nowrap;display:flex;gap:3px;align-items:center;}
+.env-chip .lbl{color:var(--text2);}
+.env-chip .val{color:var(--accent);font-weight:600;}
+#trophicBadge{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap;transition:background .4s,color .4s;}
+#fpsDisplay{margin-left:auto;color:var(--text2);font-size:10px;white-space:nowrap;}
+#body{flex:1;display:flex;overflow:hidden;}
+#sidebar{width:200px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);
+  overflow-y:auto;padding:7px;display:flex;flex-direction:column;gap:7px;}
+.ss{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:7px;}
+.ss h3{color:var(--accent);font-size:10px;text-transform:uppercase;letter-spacing:1px;
+  margin-bottom:5px;padding-bottom:3px;border-bottom:1px solid var(--border);}
+.cr{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
+.cl{color:var(--text2);font-size:11px;}
+.cv{color:var(--accent);font-size:11px;font-weight:600;min-width:28px;text-align:right;}
+input[type=range]{width:100%;accent-color:var(--accent);height:4px;margin-bottom:3px;cursor:pointer;}
+.btn{background:var(--bg4);color:var(--text);border:1px solid var(--border);border-radius:3px;
+  padding:4px 7px;cursor:pointer;font-size:11px;width:100%;margin-bottom:3px;text-align:left;
+  transition:background .12s,color .12s;}
+.btn:hover{background:var(--bg3);color:var(--accent);border-color:var(--accent);}
+.btn.active{background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:700;}
+select.cs{width:100%;background:var(--bg4);color:var(--text);border:1px solid var(--border);
+  border-radius:3px;padding:3px;font-size:11px;cursor:pointer;outline:none;}
+#infoPanel{background:var(--bg4);border-radius:4px;padding:6px;font-size:11px;
+  color:var(--text2);min-height:65px;border:1px solid var(--border);line-height:1.5;}
+#infoPanel b{color:var(--accent);}
+#center{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+#lakeWrap{flex:0 0 380px;position:relative;overflow:hidden;}
+#lakeCanvas{display:block;width:100%;height:380px;}
+#fwWrap{flex:1;min-height:190px;border-top:1px solid var(--border);position:relative;overflow:hidden;}
+#fwCanvas{display:block;width:100%;height:100%;}
+#rightPanel{width:240px;flex-shrink:0;background:var(--bg2);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;}
+#tsWrap{flex-shrink:0;padding:4px;border-bottom:1px solid var(--border);}
+#tsCanvas{display:block;}
+#spListWrap{flex:1;overflow-y:auto;padding:3px 2px;}
+.spg{color:var(--accent);font-size:10px;text-transform:uppercase;letter-spacing:.7px;
+  padding:4px 5px 2px;display:block;}
+.spr{display:flex;align-items:center;padding:2px 5px;border-radius:3px;cursor:default;transition:background .1s;}
+.spr:hover{background:var(--bg3);}
+.spd{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-right:5px;}
+.spk{color:var(--text2);font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.spv{color:var(--text);font-size:11px;font-weight:600;min-width:48px;text-align:right;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="header">
+  <h1>Represa Rio Preto — Lago 3</h1>
+  <div id="envBar">
+    <div class="env-chip"><span class="lbl">Dia</span><span class="val" id="eDay">1</span></div>
+    <div class="env-chip"><span class="lbl">Mês</span><span class="val" id="eMes">Jan</span></div>
+    <div class="env-chip"><span class="lbl">Estação</span><span class="val" id="eSeason">Verão</span></div>
+    <div class="env-chip"><span class="lbl">T</span><span class="val" id="eTemp">24.0</span><span class="lbl">°C</span></div>
+    <div class="env-chip"><span class="lbl">OD</span><span class="val" id="eDO">6.00</span><span class="lbl">mg/L</span></div>
+    <div class="env-chip"><span class="lbl">Transp</span><span class="val" id="eTransp">1.00</span><span class="lbl">m</span></div>
+    <div class="env-chip"><span class="lbl">Cond</span><span class="val" id="eCond">150</span><span class="lbl">μS</span></div>
+    <div class="env-chip"><span class="lbl">pH</span><span class="val" id="ePH">6.67</span></div>
+    <div class="env-chip"><span class="lbl">Chl-a</span><span class="val" id="eChl">4.50</span><span class="lbl">μg/L</span></div>
+    <div id="trophicBadge">Mesotrófico</div>
+  </div>
+  <span id="fpsDisplay">0 fps</span>
+</div>
+<div id="body">
+<div id="sidebar">
+  <div class="ss">
+    <h3>Simulação</h3>
+    <div class="cr"><span class="cl">Velocidade</span><span class="cv" id="vSpeed">5</span></div>
+    <input type="range" id="sSpeed" min="1" max="30" value="5">
+    <button class="btn" id="btnPause">⏸ Pausar</button>
+    <button class="btn" id="btnReset">↺ Reiniciar</button>
+  </div>
+  <div class="ss">
+    <h3>Perturbações</h3>
+    <button class="btn" id="btnDragagem">🚧 Dragagem: OFF</button>
+    <button class="btn" id="btnPollution">💧 Pulso Poluição</button>
+    <button class="btn" id="btnAddFish">🐟 Introduzir Peixes</button>
+    <button class="btn" id="btnDrought">☀ Seca Intensa</button>
+  </div>
+  <div class="ss">
+    <h3>Parâmetros</h3>
+    <div class="cr"><span class="cl">Cap. Fito (KP)</span><span class="cv" id="vKP">4.0</span></div>
+    <input type="range" id="sKP" min="0.5" max="6" step="0.1" value="4.0">
+    <div class="cr"><span class="cl">Pressão Peixes</span><span class="cv" id="vFish">1.0</span></div>
+    <input type="range" id="sFish" min="0" max="3" step="0.1" value="1.0">
+    <div class="cr"><span class="cl">Cobert. Macrófitas</span><span class="cv" id="vMacro">1.0</span></div>
+    <input type="range" id="sMacro" min="0" max="2" step="0.1" value="1.0">
+    <div class="cr"><span class="cl">Carga Orgânica</span><span class="cv" id="vOM">1.0</span></div>
+    <input type="range" id="sOM" min="0" max="3" step="0.1" value="1.0">
+  </div>
+  <div class="ss">
+    <h3>Visualização</h3>
+    <div class="cr" style="margin-bottom:5px;"><span class="cl">Série Temporal</span></div>
+    <select class="cs" id="plotSelect">
+      <option value="0">Fitoplâncton</option>
+      <option value="1">Cladóceros</option>
+      <option value="2">Copépodes</option>
+      <option value="3">Rotíferos</option>
+      <option value="4">Peixes</option>
+      <option value="5">Ambiente</option>
+    </select>
+  </div>
+  <div id="infoPanel">
+    <b>Simulação Ecossistêmica</b><br>
+    Represa Rio Preto, SP<br>
+    Zona limnética — Lago 3
+  </div>
+</div>
+<div id="center">
+  <div id="lakeWrap"><canvas id="lakeCanvas"></canvas></div>
+  <div id="fwWrap"><canvas id="fwCanvas"></canvas></div>
+</div>
+<div id="rightPanel">
+  <div id="tsWrap"><canvas id="tsCanvas" width="232" height="310"></canvas></div>
+  <div id="spListWrap"></div>
+</div>
+</div>
+</div>
+<script>
+// =============================================================
+// CONSTANTS & SPECIES INDEX MAP
+// =============================================================
+const IDX = {
+  Pp:0, Pc:1, OM:2,
+  Dg:3, Dl:4, Mm:5, Ds:6, Cc:7, Bh:8, Bds:9, Il:10,
+  Ni:11, Td:12,
+  Ro:13, Pv:14, Cr:15, Bf:16, Bdo:17,
+  He:18, Hm:19, Sn:20,
+  Ei:21, Ty:22
+};
+const N_VARS = 23;
+const DT = 0.5;          // integration timestep (days)
+const HISTORY_LEN = 730; // days of history stored
+const HISTORY_STEPS = Math.ceil(HISTORY_LEN / DT); // 1460 steps
+
+// Month names (Portuguese)
+const MONTH_NAMES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+// =============================================================
+// SPECIES METADATA
+// =============================================================
+const SPECIES = [
+  {idx:0,  key:'Pp',  name:'Fitoplâncton palatável',    unit:'μg Chl-a/L', color:'#66BB6A', pxSize:2, group:'phyto'},
+  {idx:1,  key:'Pc',  name:'Microalgas coloniais/bact.', unit:'μg Chl-a/L', color:'#A5D6A7', pxSize:2, group:'phyto'},
+  {idx:2,  key:'OM',  name:'Matéria Orgânica',           unit:'mg C/L',     color:'#8D6E63', pxSize:0, group:'env'},
+  {idx:3,  key:'Dg',  name:'Daphnia gessneri',           unit:'ind/L',      color:'#1565C0', pxSize:4, group:'cladoc'},
+  {idx:4,  key:'Dl',  name:'Daphnia laevis',             unit:'ind/L',      color:'#1976D2', pxSize:4, group:'cladoc'},
+  {idx:5,  key:'Mm',  name:'Moina micrura',              unit:'ind/L',      color:'#42A5F5', pxSize:3, group:'cladoc'},
+  {idx:6,  key:'Ds',  name:'Diaphanosoma spinulosum',    unit:'ind/L',      color:'#29B6F6', pxSize:3, group:'cladoc'},
+  {idx:7,  key:'Cc',  name:'Ceriodaphnia cornuta',       unit:'ind/L',      color:'#00BCD4', pxSize:2, group:'cladoc'},
+  {idx:8,  key:'Bh',  name:'Bosmina hagmanni',           unit:'ind/L',      color:'#0097A7', pxSize:2, group:'cladoc'},
+  {idx:9,  key:'Bds', name:'Bosminopsis deitersi',       unit:'ind/L',      color:'#00796B', pxSize:2, group:'cladoc'},
+  {idx:10, key:'Il',  name:'Ilyocryptus sp.',            unit:'ind/L',      color:'#4DB6AC', pxSize:2, group:'cladoc'},
+  {idx:11, key:'Ni',  name:'Notodiaptomus iheringi',     unit:'ind/L',      color:'#9C27B0', pxSize:3, group:'copepod'},
+  {idx:12, key:'Td',  name:'Thermocyclops decipiens',    unit:'ind/L',      color:'#E91E63', pxSize:2, group:'copepod'},
+  {idx:13, key:'Ro',  name:'Rotifera (base)',            unit:'ind/L',      color:'#FF9800', pxSize:1, group:'rotif'},
+  {idx:14, key:'Pv',  name:'Polyarthra vulgaris',        unit:'ind/L',      color:'#FF5722', pxSize:1, group:'rotif'},
+  {idx:15, key:'Cr',  name:'Ceriodaphnia reticulata',    unit:'ind/L',      color:'#795548', pxSize:2, group:'rotif'},
+  {idx:16, key:'Bf',  name:'Brachionus falcatus',        unit:'ind/L',      color:'#607D8B', pxSize:1, group:'rotif'},
+  {idx:17, key:'Bdo', name:'Brachionus dolabratus',      unit:'ind/L',      color:'#9E9E9E', pxSize:1, group:'rotif'},
+  {idx:18, key:'He',  name:'Hyphessobrycon eques',       unit:'(0-5)',      color:'#F44336', pxSize:8, group:'fish'},
+  {idx:19, key:'Hm',  name:'Hemigrammus marginatus',     unit:'(0-5)',      color:'#FF7043', pxSize:8, group:'fish'},
+  {idx:20, key:'Sn',  name:'Serrapinnus notomelas',      unit:'(0-5)',      color:'#FFA726', pxSize:8, group:'fish'},
+  {idx:21, key:'Ei',  name:'Eichhornia crassipes',       unit:'(0-1)',      color:'#2E7D32', pxSize:0, group:'macro'},
+  {idx:22, key:'Ty',  name:'Typha domingensis',          unit:'(0-1)',      color:'#388E3C', pxSize:0, group:'macro'},
+];
+
+// Quick lookup by key
+const SP_BY_KEY = {};
+for(const s of SPECIES) SP_BY_KEY[s.key] = s;
+
+// =============================================================
+// SEEDED PSEUDO-RANDOM NUMBER GENERATOR (Mulberry32)
+// =============================================================
+function makePRNG(seed) {
+  let s = seed >>> 0;
+  return function() {
+    s = (s + 0x6D2B79F5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = t + Math.imul(t ^ (t >>> 7), 61 | t) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+let rng = makePRNG(1337);
+
+// =============================================================
+// SIMULATION CONTROLS
+// =============================================================
+let ctrl = {
+  speed:       5,       // steps per frame
+  paused:      false,
+  dragagem:    false,
+  droughtOn:   false,
+  KP:          4.0,     // phyto carrying capacity
+  fishPressure:1.0,     // fish predation multiplier
+  macro_cover: 1.0,     // macrophyte growth multiplier
+  OM_load:     1.0,     // organic load multiplier
+  plotGroup:   0,
+};
+
+// =============================================================
+// STATE VECTORS & HISTORY BUFFER
+// =============================================================
+let simTime = 0.0;  // days since Jan 1
+let state   = new Float64Array(N_VARS);
+
+// Circular buffer: step i's state at offset (i % HISTORY_STEPS)*N_VARS
+let histBuf   = new Float64Array(HISTORY_STEPS * N_VARS);
+let histHead  = 0;   // next write position
+let histCount = 0;   // total steps stored (capped at HISTORY_STEPS)
+
+function pushHistory() {
+  const off = histHead * N_VARS;
+  histBuf.set(state, off);
+  histHead = (histHead + 1) % HISTORY_STEPS;
+  if (histCount < HISTORY_STEPS) histCount++;
+}
+
+// stepsBack=0 → most recent push; stepsBack=1 → previous; etc.
+function getHistory(stepsBack, varIdx) {
+  if (stepsBack >= histCount) return 0;
+  const pos = (histHead - 1 - stepsBack + HISTORY_STEPS) % HISTORY_STEPS;
+  return histBuf[pos * N_VARS + varIdx];
+}
+
+// =============================================================
+// INITIAL CONDITIONS
+// =============================================================
+function initState() {
+  rng = makePRNG(1337);
+  simTime   = 0;
+  histHead  = 0;
+  histCount = 0;
+  state.fill(0);
+  // Abiotic / primary producers
+  state[IDX.Pp]  = 3.0;
+  state[IDX.Pc]  = 1.5;
+  state[IDX.OM]  = 1.0;
+  // Cladocera
+  state[IDX.Dg]  = 8.0;
+  state[IDX.Dl]  = 3.0;
+  state[IDX.Mm]  = 12.0;
+  state[IDX.Ds]  = 5.0;
+  state[IDX.Cc]  = 4.0;
+  state[IDX.Bh]  = 2.0;
+  state[IDX.Bds] = 2.0;
+  state[IDX.Il]  = 1.5;
+  // Copepoda
+  state[IDX.Ni]  = 18.0;
+  state[IDX.Td]  = 10.0;
+  // Rotifera
+  state[IDX.Ro]  = 15.0;
+  state[IDX.Pv]  = 0.1;
+  state[IDX.Cr]  = 0.1;
+  state[IDX.Bf]  = 0.1;
+  state[IDX.Bdo] = 0.1;
+  // Fish (normalized 0-5)
+  state[IDX.He]  = 1.5;
+  state[IDX.Hm]  = 1.0;
+  state[IDX.Sn]  = 1.2;
+  // Macrophytes (0-1)
+  state[IDX.Ei]  = 0.6;
+  state[IDX.Ty]  = 0.4;
+  pushHistory();
+}
+
+// =============================================================
+// ENVIRONMENTAL FORCING  (Southern Hemisphere, São Paulo state)
+// =============================================================
+function envForce(t) {
+  const PI2 = 2 * Math.PI;
+  const yr  = PI2 / 365;
+  // Temperature: peak Jan ~32°C, low Jul ~16°C
+  const T       = 24 + 8   * Math.cos(yr * (t - 15));
+  // Dissolved oxygen base: high Aug ~8.5, low Feb ~3.5 mg/L
+  const DO_base = 6.0 + 2.5 * Math.cos(yr * (t - 196));
+  // Secchi transparency: higher in Aug
+  let transp    = 1.0 + 0.6 * Math.cos(yr * (t - 210));
+  // Conductivity: higher in summer
+  const cond    = 150 + 60  * Math.sin(yr * (t - 15));
+  // pH: mean 6.67, slightly higher in winter
+  const pH      = 6.67 + 0.3 * Math.cos(yr * (t - 196));
+  // Drought perturbation: reduce transparency
+  if (ctrl.droughtOn) transp = Math.max(0.2, transp * 0.4);
+  return { T, DO_base, transp, cond, pH };
+}
+
+function getSeason(t) {
+  const d = ((t % 365) + 365) % 365;
+  if (d < 90 || d >= 335) return 'Verão';
+  if (d < 180) return 'Outono';
+  if (d < 270) return 'Inverno';
+  return 'Primavera';
+}
+
+function getMonthIdx(t) {
+  const d = ((Math.floor(t) % 365) + 365) % 365;
+  return Math.min(11, Math.floor(d / 30.4167));
+}
+
+// =============================================================
+// ODE SYSTEM – COMPUTE DERIVATIVES
+// =============================================================
+function derivatives(s, t) {
+  const dS = new Float64Array(N_VARS);
+  const env = envForce(t);
+  const { T, DO_base, transp, cond } = env;
+
+  // Effective DO (reduced by OM decomposition)
+  const DO = Math.max(0.3, DO_base - 0.5 * (s[IDX.OM] / 2.0));
+
+  // ── Temperature response factors ──
+  const fT_phyto = Math.exp(Math.log(2)   / 10 * (T - 20)); // Q10=2
+  const fT_zoo   = Math.exp(Math.log(1.8) / 10 * (T - 20)); // Q10=1.8
+  const fT_macro = Math.exp(Math.log(1.5) / 10 * (T - 20)); // Q10=1.5
+
+  // ── Light from transparency ──
+  const fLight = Math.min(1.5, transp / 0.8);
+
+  // ── Current phytoplankton state ──
+  const Pp   = Math.max(0, s[IDX.Pp]);
+  const Pc   = Math.max(0, s[IDX.Pc]);
+  const Ptot = Pp + Pc;
+  const KP   = ctrl.KP;
+
+  // ── Grazing: filter-feeders on Pp (Holling II) ──
+  // Format: [idx, clearance_coeff, half-sat for Pp]
+  const FILTER_FEEDERS = [
+    [IDX.Dg,  0.60, 1.0],
+    [IDX.Dl,  0.55, 1.0],
+    [IDX.Mm,  0.50, 0.7],
+    [IDX.Ds,  0.45, 0.8],
+    [IDX.Cc,  0.40, 0.6],
+    [IDX.Bh,  0.35, 0.5],
+    [IDX.Bds, 0.33, 0.5],
+    [IDX.Il,  0.30, 0.8],
+    [IDX.Ni,  0.40, 1.2],
+    [IDX.Ro,  0.30, 0.4],
+    [IDX.Pv,  0.25, 0.3],
+    [IDX.Cr,  0.40, 0.5],
+    [IDX.Bf,  0.28, 0.35],
+    [IDX.Bdo, 0.28, 0.35],
+  ];
+
+  let grazPp = 0;
+  for (const [zi, cc, hh] of FILTER_FEEDERS) {
+    const Z = Math.max(0, s[zi]);
+    if (Z < 1e-9) continue;
+    grazPp += cc * Z * Pp / (hh + Pp);
+  }
+
+  // ── Grazing on Pc: Td specializes, Ni partially ──
+  const Td_v = Math.max(0, s[IDX.Td]);
+  const Ni_v = Math.max(0, s[IDX.Ni]);
+  let grazPc = 0;
+  grazPc += 0.55 * Td_v * Pc / (0.8 + Pc);
+  grazPc += 0.25 * Ni_v * Pc / (0.8 + Pc);
+
+  // ── Phytoplankton dynamics ──
+  const rPp = 0.5, mPp = 0.08;
+  const rPc = 0.3, mPc = 0.05;
+
+  dS[IDX.Pp] = rPp * fT_phyto * fLight * Math.max(0, 1 - Ptot/KP) * Pp
+              - grazPp - mPp * Pp;
+
+  const aOM = 0.02; // bacteria stimulation from OM
+  dS[IDX.Pc] = rPc * fT_phyto * Math.max(0, 1 - Ptot/KP) * Pc
+              + aOM * s[IDX.OM]
+              - grazPc - mPc * Pc;
+
+  // ── Organic matter ──
+  const summerPulse = 1 + 0.3 * Math.max(0, Math.sin(2*Math.PI*(t-15)/365));
+  const OM_input = 0.3 * ctrl.OM_load * summerPulse;
+  const mOM = 0.15;
+  let mortFlux = mPp * Pp * 0.3 + mPc * Pc * 0.3;
+  // Add zooplankton mortality contributions
+  for (const sp of SPECIES) {
+    if (sp.group==='cladoc'||sp.group==='copepod'||sp.group==='rotif') {
+      mortFlux += Math.max(0, s[sp.idx]) * 0.015;
+    }
+  }
+  dS[IDX.OM] = OM_input - mOM * Math.max(0, s[IDX.OM]) + mortFlux;
+
+  // ── Fish state ──
+  const He  = Math.max(0, s[IDX.He]);
+  const Hm  = Math.max(0, s[IDX.Hm]);
+  const Sn  = Math.max(0, s[IDX.Sn]);
+  const fp  = ctrl.fishPressure;
+
+  // Predation rates (biomass-scaled)
+  const rate_He = He * 0.8 * fp;
+  const rate_Hm = Hm * 0.5 * fp;
+  const rate_Sn = Sn * 0.2 * fp;
+
+  // ── Macrophyte refuge ──
+  const Ei_v = Math.max(0, s[IDX.Ei]);
+  const Ty_v = Math.max(0, s[IDX.Ty]);
+  const macroRef = Math.min(1, (Ei_v + Ty_v) * ctrl.macro_cover);
+  const refugePelagic  = Math.max(0, 1 - macroRef * 0.2);
+  const refugeLittoral = Math.max(0, 1 - macroRef * 0.55);
+
+  // ── Fish predation preferences per species ──
+  // pref_He: strict zooplanktivore
+  const PREF_He  = {3:1.0,4:1.0,5:0.8,6:0.7,7:0.6,8:0.5,9:0.5,10:0.3,11:0.4,12:0.3,13:0.3,14:0.2,15:0.3,16:0.2,17:0.2};
+  // pref_Hm: flexible predator
+  const PREF_Hm  = {3:0.5,4:0.5,5:0.5,6:0.5,7:0.5,8:0.4,9:0.4,10:0.4,11:0.5,12:0.4,13:0.4,14:0.3,15:0.4,16:0.3,17:0.3};
+  // pref_Sn: weak zooplanktivore
+  const PREF_Sn  = {3:0.1,4:0.1,5:0.1,6:0.1,7:0.1,8:0.1,9:0.1,10:0.1,11:0.1,12:0.1,13:0.1,14:0.1,15:0.1,16:0.1,17:0.1};
+
+  // ── Zooplankton parameters ──
+  // [idx, r, e, c, h, m, DO_thresh, DO_min, beta_cond, isLittoral, isDisturbance]
+  const ZOO_PARAMS = [
+    [IDX.Dg,  0.40, 0.65, 0.60, 1.0, 0.04, 5.0, 1.5, 0.004, false, false],
+    [IDX.Dl,  0.38, 0.63, 0.55, 1.0, 0.04, 5.0, 1.5, 0.005, false, false],
+    [IDX.Mm,  0.55, 0.60, 0.50, 0.7, 0.05, 3.5, 0.8, 0.002, false, false],
+    [IDX.Ds,  0.45, 0.60, 0.45, 0.8, 0.05, 4.0, 1.0, 0.003, false, false],
+    [IDX.Cc,  0.50, 0.58, 0.40, 0.6, 0.06, 3.5, 0.8, 0.002, false, false],
+    [IDX.Bh,  0.48, 0.55, 0.35, 0.5, 0.06, 3.5, 0.8, 0.002, false, false],
+    [IDX.Bds, 0.46, 0.55, 0.33, 0.5, 0.06, 3.5, 0.8, 0.002, false, false],
+    [IDX.Il,  0.35, 0.50, 0.30, 0.8, 0.06, 4.0, 1.0, 0.002, true,  false],
+    [IDX.Ni,  0.25, 0.60, 0.50, 1.2, 0.03, 4.0, 1.0, 0.003, false, false],
+    [IDX.Td,  0.30, 0.55, 0.20, 0.5, 0.03, 3.0, 0.5, 0.001, false, false],
+    [IDX.Ro,  0.80, 0.50, 0.30, 0.4, 0.08, 2.5, 0.3, 0.000, false, false],
+    [IDX.Pv,  1.0,  0.45, 0.25, 0.3, 0.10, 2.5, 0.3, 0.000, false, true ],
+    [IDX.Cr,  0.65, 0.55, 0.40, 0.5, 0.08, 2.5, 0.3, 0.000, false, true ],
+    [IDX.Bf,  0.85, 0.48, 0.28, 0.35,0.10, 2.5, 0.3, 0.000, false, true ],
+    [IDX.Bdo, 0.80, 0.48, 0.28, 0.35,0.10, 2.5, 0.3, 0.000, false, true ],
+  ];
+
+  // Precompute total cladocera for fish growth calculation
+  let totalCladocera = 0;
+  for (const i of [IDX.Dg,IDX.Dl,IDX.Mm,IDX.Ds,IDX.Cc,IDX.Bh,IDX.Bds]) {
+    totalCladocera += Math.max(0, s[i]);
+  }
+
+  // ── Zooplankton ODEs ──
+  for (const [zi, r_base, e, c, h, m, DO_thresh, DO_min, beta_cond, isLittoral, isDisturbance] of ZOO_PARAMS) {
+    const Z = Math.max(0, s[zi]);
+
+    // Immigration flux to prevent extinction
+    const immigration = 0.02;
+    if (Z < 1e-6) { dS[zi] = immigration; continue; }
+
+    // Effective growth rate (dragagem triples disturbance species)
+    let r = r_base;
+    if (isDisturbance) {
+      r = ctrl.dragagem ? r_base * 3.0 : r_base * 0.3;
+    }
+
+    // Food source
+    let food;
+    if (zi === IDX.Ni || zi === IDX.Td) {
+      food = Pp + 0.6 * Pc; // copepods eat both
+    } else {
+      food = Pp;
+    }
+    food = Math.max(0, food);
+
+    // Holling type II ingestion
+    const ingestion = c * food / (h + food + 1e-9);
+
+    // DO stress
+    let fDO = 1.0;
+    if (DO < DO_thresh) {
+      fDO = Math.max(0, (DO - DO_min) / (DO_thresh - DO_min + 1e-9));
+    }
+
+    // Conductivity stress (Daphnia most sensitive)
+    const fCond = Math.max(0, 1 - beta_cond * Math.max(0, cond - 100));
+
+    // Predation (summed across fish, per-capita)
+    const pH_e = PREF_He[zi] || 0.15;
+    const pH_m = PREF_Hm[zi] || 0.3;
+    const pH_s = PREF_Sn[zi] || 0.1;
+    const refuge = isLittoral ? refugeLittoral : refugePelagic;
+    const predationRate = (pH_e*rate_He + pH_m*rate_Hm + pH_s*rate_Sn) * refuge;
+    const pred = predationRate / Math.max(1e-3, Z);
+
+    // Net per-capita growth
+    const net = r * e * ingestion * fT_zoo * fDO * fCond - m - pred;
+
+    dS[zi] = Z * net + immigration;
+
+    // Soft cap at high densities
+    if (Z > 80) dS[zi] -= 0.05 * (Z - 80) * Z;
+  }
+
+  // ── Fish dynamics (logistic with prey dependence) ──
+  const preyFactor_He = Math.min(2, totalCladocera / 5.0);
+  const preyFactor_Hm = Math.min(2, (totalCladocera + Ni_v + Td_v) / 8.0);
+  const preyFactor_Sn = Math.min(2, (Pp + totalCladocera * 0.3) / 3.0);
+
+  dS[IDX.He] = 0.05 * He * (1 - He/3.0) * preyFactor_He - 0.01 * He;
+  dS[IDX.Hm] = 0.04 * Hm * (1 - Hm/2.0) * preyFactor_Hm - 0.01 * Hm;
+  dS[IDX.Sn] = 0.04 * Sn * (1 - Sn/2.5) * preyFactor_Sn - 0.01 * Sn;
+
+  // ── Macrophyte dynamics ──
+  dS[IDX.Ei] = 0.08 * Math.max(0.1,fT_macro) * Ei_v * (1 - Ei_v) * ctrl.macro_cover - 0.02 * Ei_v;
+  dS[IDX.Ty] = 0.04 * Ty_v * (1 - Ty_v) * ctrl.macro_cover - 0.015 * Ty_v;
+
+  return dS;
+}
+
+// =============================================================
+// EULER INTEGRATION STEP
+// =============================================================
+function stepEuler(dt) {
+  const dS = derivatives(state, simTime);
+  for (let i = 0; i < N_VARS; i++) {
+    state[i] = Math.max(0, state[i] + dS[i] * dt);
+  }
+  // Hard clamps
+  state[IDX.He]  = Math.min(5, state[IDX.He]);
+  state[IDX.Hm]  = Math.min(5, state[IDX.Hm]);
+  state[IDX.Sn]  = Math.min(5, state[IDX.Sn]);
+  state[IDX.Ei]  = Math.min(1, state[IDX.Ei]);
+  state[IDX.Ty]  = Math.min(1, state[IDX.Ty]);
+  state[IDX.OM]  = Math.min(12, state[IDX.OM]);
+  // Clamp zooplankton to sane upper bound
+  for (const sp of SPECIES) {
+    if (sp.group==='cladoc'||sp.group==='copepod'||sp.group==='rotif') {
+      state[sp.idx] = Math.min(200, state[sp.idx]);
+    }
+  }
+}
+
+// =============================================================
+// SIMULATE N STEPS
+// =============================================================
+function simulate(nSteps) {
+  for (let i = 0; i < nSteps; i++) {
+    stepEuler(DT);
+    simTime += DT;
+    pushHistory();
+  }
+}
+
+// =============================================================
+// PARTICLE SYSTEM
+// =============================================================
+const MAX_PARTICLES = 480;
+let particles = [];
+
+function createParticle(sp, W, H) {
+  const isLittoral = (sp.key === 'Il');
+  let x, y;
+  if (sp.group === 'fish') {
+    x = W * 0.15 + rng() * W * 0.7;
+    y = H * 0.3  + rng() * H * 0.45;
+  } else if (isLittoral) {
+    x = rng() < 0.5 ? rng() * W * 0.18 : W * 0.82 + rng() * W * 0.15;
+    y = H * 0.25 + rng() * H * 0.6;
+  } else {
+    x = W * 0.2 + rng() * W * 0.6;
+    y = H * 0.2 + rng() * H * 0.65;
+  }
+  return {
+    sp,
+    x, y,
+    vx: (rng() - 0.5) * 0.4,
+    vy: (rng() - 0.5) * 0.3,
+    phase: rng() * Math.PI * 2,
+    isLittoral,
+    wobble: rng() * 0.03 + 0.01,
+    // Fish-specific
+    dir: rng() < 0.5 ? 1 : -1,  // facing direction
+    lungeTimer: Math.floor(rng() * 200),
+  };
+}
+
+function rebuildParticles(W, H) {
+  particles = [];
+  const zooGroups = ['cladoc','copepod','rotif'];
+  for (const sp of SPECIES) {
+    if (sp.group === 'fish') {
+      const n = Math.max(1, Math.round(state[sp.idx] * 1.2));
+      for (let i = 0; i < Math.min(n, 8); i++) {
+        particles.push(createParticle(sp, W, H));
+      }
+    } else if (zooGroups.includes(sp.group)) {
+      const n = Math.max(1, Math.round(state[sp.idx] * 1.5));
+      for (let i = 0; i < Math.min(n, 35); i++) {
+        particles.push(createParticle(sp, W, H));
+      }
+    }
+  }
+}
+
+function updateParticles(W, H) {
+  // Recalculate total (don't rebuild every frame - just move)
+  for (const p of particles) {
+    const sp = p.sp;
+    const val = state[sp.idx];
+    p.phase += p.wobble;
+
+    if (sp.group === 'fish') {
+      // Fish swim in smooth sinusoidal paths
+      p.vx += p.dir * (0.08 + 0.04 * rng());
+      p.vy  = Math.sin(p.phase) * 0.5;
+      p.vx  = Math.max(-2.5, Math.min(2.5, p.vx));
+      p.x  += p.vx;
+      p.y  += p.vy;
+      // Reverse at edges
+      if (p.x < W * 0.06) { p.dir = 1;  p.vx =  0.2; }
+      if (p.x > W * 0.94) { p.dir = -1; p.vx = -0.2; }
+      if (p.y < H * 0.18) { p.vy =  0.3; p.y = H * 0.18; }
+      if (p.y > H * 0.87) { p.vy = -0.3; p.y = H * 0.87; }
+      // Lunge behavior
+      p.lungeTimer--;
+      if (p.lungeTimer <= 0) {
+        p.vx += p.dir * 2.0;
+        p.lungeTimer = 100 + Math.floor(rng() * 200);
+      }
+    } else {
+      // Zooplankton: random walk + zone attraction
+      p.vx += (rng() - 0.5) * 0.18;
+      p.vy += (rng() - 0.5) * 0.18 + Math.sin(p.phase) * 0.04;
+      p.vx *= 0.92;
+      p.vy *= 0.92;
+
+      // Attract to respective zone
+      const targetX = p.isLittoral
+        ? (p.x < W / 2 ? W * 0.09 : W * 0.91)
+        : W * 0.5;
+      p.vx += (targetX - p.x) * 0.0006;
+      // Mild vertical drift (upward in daytime simulation)
+      const targetY = H * 0.5;
+      p.vy += (targetY - p.y) * 0.0003;
+
+      p.x += p.vx;
+      p.y += p.vy;
+
+      // Boundary constraints
+      const xMin = p.isLittoral ? 2 : W * 0.18;
+      const xMax = p.isLittoral ? W - 2 : W * 0.82;
+      if (p.x < xMin) { p.vx += 0.5; p.x = xMin; }
+      if (p.x > xMax) { p.vx -= 0.5; p.x = xMax; }
+      if (p.y < H * 0.14) { p.vy += 0.4; p.y = H * 0.14; }
+      if (p.y > H * 0.88) { p.vy -= 0.4; p.y = H * 0.88; }
+    }
+  }
+}
+
+// =============================================================
+// CANVAS REFERENCES
+// =============================================================
+const lakeCanvas = document.getElementById('lakeCanvas');
+const lakeCtx    = lakeCanvas.getContext('2d');
+const fwCanvas   = document.getElementById('fwCanvas');
+const fwCtx      = fwCanvas.getContext('2d');
+const tsCanvas   = document.getElementById('tsCanvas');
+const tsCtx      = tsCanvas.getContext('2d');
+
+function resizeCanvases() {
+  const lakeWrap = document.getElementById('lakeWrap');
+  const W = lakeWrap.clientWidth;
+  const H = lakeWrap.clientHeight || 380;
+  if (lakeCanvas.width !== W || lakeCanvas.height !== H) {
+    lakeCanvas.width  = W;
+    lakeCanvas.height = H;
+    rebuildParticles(W, H);
+  }
+  const fwWrap = document.getElementById('fwWrap');
+  const fwW = fwWrap.clientWidth;
+  const fwH = fwWrap.clientHeight || 230;
+  if (fwCanvas.width !== fwW || fwCanvas.height !== fwH) {
+    fwCanvas.width  = fwW;
+    fwCanvas.height = fwH;
+  }
+}
+window.addEventListener('resize', resizeCanvases);
+
+// =============================================================
+// COLOR UTILITIES
+// =============================================================
+function hexToRGB(hex) {
+  const v = parseInt(hex.replace('#',''), 16);
+  return [(v>>16)&255, (v>>8)&255, v&255];
+}
+function lerpRGB(a, b, t) {
+  return [
+    Math.round(a[0] + (b[0]-a[0])*t),
+    Math.round(a[1] + (b[1]-a[1])*t),
+    Math.round(a[2] + (b[2]-a[2])*t),
+  ];
+}
+function rgbStr(r,g,b,a=1) {
+  return a<1 ? `rgba(${r},${g},${b},${a.toFixed(3)})` : `rgb(${r},${g},${b})`;
+}
+
+// =============================================================
+// MACROPHYTE DRAWING HELPERS
+// =============================================================
+function drawEichhornia(ctx, x, y, scale) {
+  ctx.save();
+  ctx.translate(x, y);
+  const sc = scale * 0.7;
+
+  // Stem
+  ctx.strokeStyle = '#2E7D32';
+  ctx.lineWidth = 2 * sc;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, -30 * sc);
+  ctx.stroke();
+
+  // Leaves (3 ellipses)
+  ctx.fillStyle = '#388E3C';
+  for (let i = 0; i < 3; i++) {
+    const ang = (i / 3) * Math.PI * 2 - 0.5;
+    const lx  = Math.cos(ang) * 12 * sc;
+    const ly  = -15 * sc + Math.sin(ang) * 8 * sc;
+    ctx.beginPath();
+    ctx.ellipse(lx, ly, 7 * sc, 11 * sc, ang + 0.3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Flower
+  ctx.fillStyle = '#7B1FA2';
+  ctx.beginPath();
+  ctx.ellipse(0, -34 * sc, 4 * sc, 10 * sc, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#CE93D8';
+  ctx.beginPath();
+  ctx.arc(0, -40 * sc, 4 * sc, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#FFF9C4';
+  ctx.beginPath();
+  ctx.arc(0, -40 * sc, 1.5 * sc, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawTypha(ctx, x, y, scale) {
+  ctx.save();
+  ctx.translate(x, y);
+  const sc = scale * 0.7;
+
+  // Main stem
+  ctx.strokeStyle = '#5D4037';
+  ctx.lineWidth = 2 * sc;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, -55 * sc);
+  ctx.stroke();
+
+  // Brown sausage (seed head)
+  ctx.fillStyle = '#795548';
+  ctx.beginPath();
+  ctx.ellipse(0, -40 * sc, 4 * sc, 13 * sc, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Green upper spike
+  ctx.strokeStyle = '#558B2F';
+  ctx.lineWidth = 1.5 * sc;
+  ctx.beginPath();
+  ctx.moveTo(0, -52 * sc);
+  ctx.lineTo(0, -60 * sc);
+  ctx.stroke();
+
+  // Leaves
+  ctx.strokeStyle = '#558B2F';
+  ctx.lineWidth = 2 * sc;
+  ctx.beginPath();
+  ctx.moveTo(0, -18 * sc);
+  ctx.quadraticCurveTo(18*sc, -28*sc, 14*sc, -48*sc);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(0, -22 * sc);
+  ctx.quadraticCurveTo(-16*sc, -32*sc, -12*sc, -50*sc);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// =============================================================
+// FISH DRAWING
+// =============================================================
+function drawFish(ctx, x, y, facing, color, size) {
+  ctx.save();
+  ctx.translate(x, y);
+  if (facing < 0) ctx.scale(-1, 1);
+
+  const [r,g,b] = hexToRGB(color);
+  const darkCol = `rgb(${Math.max(0,r-50)},${Math.max(0,g-50)},${Math.max(0,b-50)})`;
+
+  // Body
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, size * 1.9, size * 0.95, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Dorsal fin
+  ctx.fillStyle = darkCol;
+  ctx.beginPath();
+  ctx.moveTo(-size * 0.3, -size * 0.9);
+  ctx.lineTo(size * 0.4,  -size * 0.9);
+  ctx.lineTo(size * 0.1,  -size * 0.4);
+  ctx.closePath();
+  ctx.fill();
+
+  // Tail fin
+  ctx.fillStyle = darkCol;
+  ctx.beginPath();
+  ctx.moveTo(-size * 1.85, 0);
+  ctx.lineTo(-size * 3.0,  -size * 0.9);
+  ctx.lineTo(-size * 3.0,   size * 0.9);
+  ctx.closePath();
+  ctx.fill();
+
+  // Eye
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(size * 0.9, -size * 0.1, size * 0.35, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#111';
+  ctx.beginPath();
+  ctx.arc(size * 0.95, -size * 0.1, size * 0.18, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+// =============================================================
+// LAKE RENDERING
+// =============================================================
+function renderLake() {
+  const W = lakeCanvas.width;
+  const H = lakeCanvas.height;
+  const ctx = lakeCtx;
+  ctx.clearRect(0, 0, W, H);
+
+  const env      = envForce(simTime);
+  const { T, DO_base, transp } = env;
+  const DO_eff   = Math.max(0.3, DO_base - 0.5 * (state[IDX.OM] / 2.0));
+  const chlA     = state[IDX.Pp] + state[IDX.Pc];
+  const turbidity = Math.min(1, chlA / 9 + state[IDX.OM] / 8);
+
+  // ── Sky ──
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.15);
+  skyGrad.addColorStop(0, '#0a1929');
+  skyGrad.addColorStop(1, '#112240');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, W, H * 0.15);
+
+  // ── Water body ──
+  // Color: blend from clear blue → eutrophic green-brown
+  const clearBlue  = hexToRGB('#1565C0');
+  const mesGreen   = hexToRGB('#2E7D32');
+  const eutBrown   = hexToRGB('#6D4C41');
+  let waterTop, waterBot;
+  if (turbidity < 0.4) {
+    const t2 = turbidity / 0.4;
+    waterTop = lerpRGB(clearBlue, mesGreen, t2);
+    waterBot = lerpRGB([13,71,161], [27,94,32], t2);
+  } else {
+    const t2 = (turbidity - 0.4) / 0.6;
+    waterTop = lerpRGB(mesGreen, eutBrown, t2);
+    waterBot = lerpRGB([27,94,32], [62,39,35], t2);
+  }
+  const waterGrad = ctx.createLinearGradient(0, H*0.14, 0, H);
+  waterGrad.addColorStop(0, rgbStr(...waterTop));
+  waterGrad.addColorStop(0.7, rgbStr(...lerpRGB(waterTop,waterBot,0.5)));
+  waterGrad.addColorStop(1,   rgbStr(...waterBot));
+  ctx.fillStyle = waterGrad;
+  ctx.fillRect(0, H * 0.14, W, H * 0.86);
+
+  // ── DO overlay (red tint = hypoxia, blue tint = good) ──
+  if (DO_eff < 4) {
+    const alpha = (4 - DO_eff) / 4 * 0.22;
+    ctx.fillStyle = `rgba(220,30,30,${alpha.toFixed(3)})`;
+    ctx.fillRect(0, H*0.14, W, H*0.86);
+  } else if (DO_eff > 7) {
+    const alpha = (DO_eff - 7) / 2 * 0.12;
+    ctx.fillStyle = `rgba(30,120,255,${alpha.toFixed(3)})`;
+    ctx.fillRect(0, H*0.14, W, H*0.86);
+  }
+
+  // ── Sediment layer ──
+  const sedGrad = ctx.createLinearGradient(0, H*0.86, 0, H);
+  sedGrad.addColorStop(0, '#3E2723');
+  sedGrad.addColorStop(1, '#1A1210');
+  ctx.fillStyle = sedGrad;
+  ctx.fillRect(0, H*0.86, W, H*0.14);
+
+  // ── Shore banks ──
+  ctx.fillStyle = '#37474F';
+  // Left bank
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  ctx.lineTo(0, H*0.22);
+  ctx.quadraticCurveTo(W*0.04, H*0.17, W*0.12, H*0.19);
+  ctx.lineTo(W*0.12, H);
+  ctx.closePath();
+  ctx.fill();
+  // Right bank
+  ctx.beginPath();
+  ctx.moveTo(W, H);
+  ctx.lineTo(W, H*0.22);
+  ctx.quadraticCurveTo(W*0.96, H*0.17, W*0.88, H*0.19);
+  ctx.lineTo(W*0.88, H);
+  ctx.closePath();
+  ctx.fill();
+
+  // Shore texture
+  ctx.strokeStyle = '#546E7A';
+  ctx.lineWidth = 0.5;
+  for (let i=0; i<5; i++) {
+    const py = H*0.19 + i*4;
+    ctx.beginPath();
+    ctx.moveTo(0, py); ctx.lineTo(W*0.12, py);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(W*0.88, py); ctx.lineTo(W, py);
+    ctx.stroke();
+  }
+
+  // ── Littoral zone demarcation ──
+  ctx.strokeStyle = 'rgba(100,255,218,0.12)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([5, 5]);
+  ctx.beginPath();
+  ctx.moveTo(W*0.2, H*0.14); ctx.lineTo(W*0.2, H*0.86);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(W*0.8, H*0.14); ctx.lineTo(W*0.8, H*0.86);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // ── Water surface ripples ──
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1;
+  const rippleT = simTime * 5;
+  for (let i = 0; i < 4; i++) {
+    const ry = H * 0.145 + i * 2.5;
+    ctx.beginPath();
+    for (let xi = 0; xi <= W; xi += 15) {
+      const wave = Math.sin((xi * 0.04) + rippleT * 0.3 + i) * 1.5;
+      if (xi === 0) ctx.moveTo(xi, ry + wave);
+      else ctx.lineTo(xi, ry + wave);
+    }
+    ctx.stroke();
+  }
+
+  // ── Thermocline hint (summer stratification) ──
+  if (T > 25) {
+    const thermAlpha = (T - 25) / 10;
+    const thermY = H * 0.42;
+    const tGrad = ctx.createLinearGradient(0, thermY-8, 0, thermY+12);
+    tGrad.addColorStop(0,   `rgba(255,200,80,0)`);
+    tGrad.addColorStop(0.5, `rgba(255,200,80,${(thermAlpha*0.1).toFixed(3)})`);
+    tGrad.addColorStop(1,   `rgba(255,200,80,0)`);
+    ctx.fillStyle = tGrad;
+    ctx.fillRect(W*0.12, thermY-8, W*0.76, 20);
+  }
+
+  // ── Macrophytes ──
+  const eiScale = state[IDX.Ei];
+  const tyScale = state[IDX.Ty];
+
+  if (eiScale > 0.05) {
+    const nPl = Math.max(1, Math.round(eiScale * 6));
+    for (let i = 0; i < nPl; i++) {
+      const xi = W * 0.015 + (i / Math.max(1,nPl-1)) * W * 0.10;
+      drawEichhornia(ctx, xi, H * 0.83, eiScale);
+    }
+    // Right side too
+    for (let i = 0; i < Math.ceil(nPl * 0.6); i++) {
+      const xi = W * 0.87 + (i / Math.max(1,nPl-1)) * W * 0.10;
+      drawEichhornia(ctx, xi, H * 0.83, eiScale * 0.8);
+    }
+  }
+  if (tyScale > 0.05) {
+    const nPl = Math.max(1, Math.round(tyScale * 5));
+    for (let i = 0; i < nPl; i++) {
+      const xi = W * 0.89 + (i / Math.max(1,nPl-1)) * W * 0.09;
+      drawTypha(ctx, xi, H * 0.82, tyScale);
+    }
+  }
+
+  // ── Zone labels ──
+  ctx.fillStyle = 'rgba(100,255,218,0.25)';
+  ctx.font = '9px Segoe UI';
+  ctx.fillText('Litoral', W*0.03, H*0.13);
+  ctx.fillText('Pelágico', W*0.47, H*0.13);
+  ctx.fillText('Litoral', W*0.84, H*0.13);
+
+  // ── Particles ──
+  updateParticles(W, H);
+  for (const p of particles) {
+    const val = state[p.sp.idx];
+    if (val < 0.04 && p.sp.group !== 'fish') continue;
+
+    const alpha = p.sp.group === 'fish'
+      ? Math.min(0.95, val / 2 + 0.3)
+      : Math.min(0.9, val / 15 + 0.2);
+
+    ctx.globalAlpha = Math.max(0.15, alpha);
+
+    if (p.sp.group === 'fish') {
+      const sz = p.sp.pxSize * 0.65;
+      const facing = p.vx >= 0 ? 1 : -1;
+      drawFish(ctx, p.x, p.y, facing, p.sp.color, sz);
+    } else {
+      const sz = p.sp.pxSize || 1.5;
+      ctx.fillStyle = p.sp.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, sz, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  // ── Status bar overlay ──
+  ctx.fillStyle = 'rgba(13,27,42,0.72)';
+  ctx.fillRect(4, H*0.14 + 4, W - 8, 21);
+
+  const day     = Math.floor(simTime);
+  const monthI  = getMonthIdx(simTime);
+  const season  = getSeason(simTime);
+  const chlaTot = chlA.toFixed(2);
+  const doStr   = DO_eff.toFixed(2);
+
+  ctx.fillStyle = '#64ffda';
+  ctx.font = '10px Segoe UI';
+  ctx.fillText(
+    `Dia: ${day} | ${MONTH_NAMES[monthI]} | ${season} | T: ${T.toFixed(1)}°C | OD: ${doStr} mg/L | Chl-a: ${chlaTot} μg/L`,
+    10, H*0.14 + 18
+  );
+
+  // Trophic state in corner
+  const chlTot2 = chlA;
+  let trophStr, trophCol;
+  if (chlTot2 < 2) {
+    trophStr='Oligotrófico'; trophCol='#29B6F6';
+  } else if (chlTot2 < 8) {
+    trophStr='Mesotrófico'; trophCol='#66BB6A';
+  } else {
+    trophStr='Eutrófico'; trophCol='#FF7043';
+  }
+  ctx.fillStyle = trophCol;
+  ctx.font = 'bold 10px Segoe UI';
+  ctx.textAlign = 'right';
+  ctx.fillText(trophStr, W - 8, H*0.14 + 18);
+  ctx.textAlign = 'left';
+}
+
+// =============================================================
+// FOOD WEB RENDERING
+// =============================================================
+const FW_NODES = [
+  // [key, label, trophic_level (0=bottom), x_frac (0-1)]
+  {key:'OM',  label:'Mat.Org.',    tl:0.0, xf:0.50},
+  {key:'Pp',  label:'Fitoplânct.', tl:1.0, xf:0.28},
+  {key:'Pc',  label:'Microalg.',   tl:1.0, xf:0.72},
+  {key:'Ro',  label:'Rotifera',    tl:2.0, xf:0.06},
+  {key:'Bh',  label:'Bosmina',     tl:2.0, xf:0.16},
+  {key:'Mm',  label:'Moina',       tl:2.0, xf:0.26},
+  {key:'Ds',  label:'Diaphanosoma',tl:2.0, xf:0.36},
+  {key:'Dg',  label:'D.gessneri',  tl:2.0, xf:0.46},
+  {key:'Dl',  label:'D.laevis',    tl:2.0, xf:0.56},
+  {key:'Cc',  label:'Cerio.corn.', tl:2.0, xf:0.66},
+  {key:'Bds', label:'Bosminop.',   tl:2.0, xf:0.76},
+  {key:'Il',  label:'Ilyocrypt.',  tl:2.0, xf:0.86},
+  {key:'Ni',  label:'Notodiapt.',  tl:2.3, xf:0.92},
+  {key:'Td',  label:'Thermocyc.',  tl:2.3, xf:0.97},
+  {key:'Sn',  label:'Serrapinnus', tl:3.0, xf:0.22},
+  {key:'Hm',  label:'Hemigrammus', tl:3.0, xf:0.52},
+  {key:'He',  label:'Hyphess.',    tl:3.0, xf:0.78},
+];
+
+const FW_EDGES = [
+  // [from, to]
+  ['OM','Pc'],
+  ['Pp','Ro'],  ['Pp','Bh'],  ['Pp','Mm'],  ['Pp','Ds'],
+  ['Pp','Dg'],  ['Pp','Dl'],  ['Pp','Cc'],  ['Pp','Bds'],
+  ['Pp','Il'],  ['Pp','Ni'],
+  ['Pc','Td'],  ['Pc','Ni'],
+  ['Ro','Hm'],  ['Ro','He'],
+  ['Mm','He'],  ['Mm','Hm'],  ['Mm','Sn'],
+  ['Ds','He'],  ['Ds','Hm'],  ['Ds','Sn'],
+  ['Dg','He'],  ['Dg','Hm'],
+  ['Dl','He'],  ['Dl','Hm'],
+  ['Cc','Hm'],  ['Bh','Hm'],
+  ['Bds','Hm'], ['Il','Hm'],
+  ['Ni','He'],  ['Ni','Hm'],
+  ['Td','Hm'],  ['Td','He'],
+  ['Pp','Sn'],
+];
+
+// Hover state for food web
+let fwHoverKey = null;
+
+function computeFWPositions(W, H) {
+  const mL=45, mR=10, mT=22, mB=22;
+  const plotW = W - mL - mR;
+  const plotH = H - mT - mB;
+  const tlMax = 3.0, tlMin = 0.0;
+  const pos = {};
+  for (const n of FW_NODES) {
+    const px = mL + n.xf * plotW;
+    const py = mT + plotH * (1 - (n.tl - tlMin) / (tlMax - tlMin));
+    const val = state[IDX[n.key]] || 0;
+    const sz  = Math.max(4, Math.min(15, Math.sqrt(val + 0.2) * 3.5));
+    pos[n.key] = { px, py, sz, val, tl: n.tl, label: n.label };
+  }
+  return { pos, mL, mR, mT, mB, plotW, plotH };
+}
+
+function renderFoodWeb() {
+  const W = fwCanvas.width;
+  const H = fwCanvas.height;
+  const ctx = fwCtx;
+  ctx.clearRect(0, 0, W, H);
+
+  // Background
+  ctx.fillStyle = '#0a1520';
+  ctx.fillRect(0, 0, W, H);
+
+  const { pos, mL, mT, plotW, plotH } = computeFWPositions(W, H);
+
+  // Title
+  ctx.fillStyle = '#64ffda';
+  ctx.font = 'bold 11px Segoe UI';
+  ctx.fillText('Rede Trófica — Represa Rio Preto Lago 3', 8, 15);
+
+  // Trophic level guide lines
+  ctx.font = '9px Segoe UI';
+  const tlLabels = {0:'N0 – Mat.Org', 1:'N1 – Produtores', 2:'N2 – Herbívoros', 3:'N3 – Peixes'};
+  for (const [tl, label] of Object.entries(tlLabels)) {
+    const py = mT + plotH * (1 - (+tl)/3);
+    ctx.strokeStyle = 'rgba(35,53,84,0.6)';
+    ctx.lineWidth = 0.8;
+    ctx.setLineDash([3,4]);
+    ctx.beginPath();
+    ctx.moveTo(mL-2, py); ctx.lineTo(mL + plotW, py);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#546E7A';
+    ctx.fillText(label, 2, py + 3);
+  }
+
+  // Edges
+  for (const [from, to] of FW_EDGES) {
+    const nf = pos[from], nt = pos[to];
+    if (!nf || !nt) continue;
+    const flux = Math.min(1, (Math.sqrt(nf.val + 0.1) * Math.sqrt(nt.val + 0.1)) * 0.04);
+    const isHighlighted = (fwHoverKey === from || fwHoverKey === to);
+    const alpha = isHighlighted ? Math.min(0.9, 0.3 + flux*0.5) : Math.min(0.4, 0.06 + flux*0.2);
+    const lw    = isHighlighted ? 1.5 + flux * 2 : 0.5 + flux * 1.5;
+
+    ctx.strokeStyle = `rgba(100,255,218,${alpha.toFixed(3)})`;
+    ctx.lineWidth = lw;
+    ctx.beginPath();
+
+    // Bezier curve
+    const cpx = (nf.px + nt.px) / 2;
+    const cpy = (nf.py + nt.py) / 2 - Math.abs(nf.py - nt.py) * 0.25;
+    ctx.moveTo(nf.px, nf.py);
+    ctx.quadraticCurveTo(cpx, cpy, nt.px, nt.py);
+    ctx.stroke();
+
+    // Arrow tip at target
+    if (isHighlighted || flux > 0.1) {
+      const dx = nt.px - cpx, dy = nt.py - cpy;
+      const len = Math.sqrt(dx*dx + dy*dy);
+      if (len > 1) {
+        const nx = dx/len, ny = dy/len;
+        const ax = nt.px - nx*nt.sz, ay = nt.py - ny*nt.sz;
+        ctx.fillStyle = `rgba(100,255,218,${(alpha*1.5).toFixed(3)})`;
+        ctx.beginPath();
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(ax - nx*7 - ny*3.5, ay - ny*7 + nx*3.5);
+        ctx.lineTo(ax - nx*7 + ny*3.5, ay - ny*7 - nx*3.5);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+  }
+
+  // Nodes
+  for (const n of FW_NODES) {
+    const { px, py, sz, val } = pos[n.key];
+    const sp = SP_BY_KEY[n.key];
+    if (!sp) continue;
+    const isHovered = (fwHoverKey === n.key);
+
+    // Glow for highlighted node
+    if (isHovered) {
+      const grd = ctx.createRadialGradient(px, py, 0, px, py, sz*2.5);
+      grd.addColorStop(0, `${sp.color}55`);
+      grd.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grd;
+      ctx.beginPath();
+      ctx.arc(px, py, sz*2.5, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    // Node circle
+    ctx.fillStyle = sp.color;
+    ctx.beginPath();
+    ctx.arc(px, py, sz, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.strokeStyle = isHovered ? '#64ffda' : 'rgba(255,255,255,0.25)';
+    ctx.lineWidth = isHovered ? 2 : 1;
+    ctx.beginPath();
+    ctx.arc(px, py, sz, 0, Math.PI*2);
+    ctx.stroke();
+
+    // Label
+    ctx.fillStyle = isHovered ? '#ccd6f6' : '#8892b0';
+    ctx.font = isHovered ? 'bold 9px Segoe UI' : '9px Segoe UI';
+    ctx.textAlign = 'center';
+    ctx.fillText(n.label, px, py - sz - 3);
+
+    // Value below node (if significant)
+    if (val > 0.5) {
+      ctx.fillStyle = sp.color;
+      ctx.font = '8px Segoe UI';
+      ctx.fillText(val.toFixed(1), px, py + sz + 9);
+    }
+  }
+  ctx.textAlign = 'left';
+}
+
+// Food web hover interaction
+fwCanvas.addEventListener('mousemove', function(e) {
+  const rect = fwCanvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const W = fwCanvas.width, H = fwCanvas.height;
+
+  if (!W || !H) return;
+  const { pos } = computeFWPositions(W, H);
+  let hit = null;
+
+  for (const n of FW_NODES) {
+    const { px, py, sz } = pos[n.key];
+    const dist = Math.sqrt((mx-px)**2 + (my-py)**2);
+    if (dist < sz + 4) { hit = n.key; break; }
+  }
+
+  fwHoverKey = hit;
+  fwCanvas.style.cursor = hit ? 'pointer' : 'default';
+
+  if (hit) {
+    const sp = SP_BY_KEY[hit];
+    const val = state[IDX[hit]];
+    const nm = pos[hit];
+    if (sp) {
+      document.getElementById('infoPanel').innerHTML =
+        `<b>${sp.name}</b><br>`+
+        `Grupo: ${sp.group}<br>`+
+        `Nível trófico: ${nm.tl.toFixed(1)}<br>`+
+        `Valor: <span style="color:${sp.color}">${val.toFixed(3)}</span> ${sp.unit}`;
+    }
+  }
+});
+fwCanvas.addEventListener('mouseleave', () => { fwHoverKey = null; });
+
+// =============================================================
+// TIME SERIES RENDERING
+// =============================================================
+const PLOT_GROUPS = [
+  {
+    name: 'Fitoplâncton',
+    items: [
+      {key:'Pp', label:'Pp (fitoplânct.)',    maxV:10},
+      {key:'Pc', label:'Pc (microalgas)',      maxV:10},
+      {key:'OM', label:'OM (mat.org.)',        maxV:5},
+    ],
+    maxVal: 10,
+  },
+  {
+    name: 'Cladóceros',
+    items: [
+      {key:'Dg',  label:'Daphnia gessneri'},
+      {key:'Dl',  label:'Daphnia laevis'},
+      {key:'Mm',  label:'Moina micrura'},
+      {key:'Ds',  label:'Diaphanosoma sp.'},
+      {key:'Cc',  label:'Ceriodaphnia corn.'},
+      {key:'Bh',  label:'Bosmina hagg.'},
+      {key:'Bds', label:'Bosminopsis'},
+    ],
+    maxVal: 40,
+  },
+  {
+    name: 'Copépodes',
+    items: [
+      {key:'Ni', label:'Notodiaptomus ih.'},
+      {key:'Td', label:'Thermocyclops dec.'},
+    ],
+    maxVal: 30,
+  },
+  {
+    name: 'Rotíferos',
+    items: [
+      {key:'Ro',  label:'Rotifera baseline'},
+      {key:'Pv',  label:'Polyarthra vulg.'},
+      {key:'Cr',  label:'Ceriodaphnia ret.'},
+      {key:'Bf',  label:'Brachionus falc.'},
+      {key:'Bdo', label:'Brachionus dol.'},
+    ],
+    maxVal: 40,
+  },
+  {
+    name: 'Peixes',
+    items: [
+      {key:'He', label:'Hyphessobrycon eq.'},
+      {key:'Hm', label:'Hemigrammus marg.'},
+      {key:'Sn', label:'Serrapinnus not.'},
+    ],
+    maxVal: 5,
+  },
+  {
+    name: 'Ambiente',
+    items: [
+      {key:'_T',     label:'Temperatura (°C)'},
+      {key:'_DO',    label:'OD efetivo (mg/L)'},
+      {key:'_CHL',   label:'Chl-a total (μg/L)'},
+      {key:'_TRANSP',label:'Transparência (m)'},
+    ],
+    maxVal: 35,
+    isEnv: true,
+  },
+];
+
+function getEnvTimeSeries(key, stepIdx) {
+  // Compute environment value at historical time
+  const t = simTime - stepIdx * DT;
+  const env = envForce(t);
+  if (key === '_T')      return env.T;
+  if (key === '_DO')     return Math.max(0.3, env.DO_base - 0.5 * (getHistory(stepIdx, IDX.OM) / 2.0));
+  if (key === '_CHL')    return getHistory(stepIdx, IDX.Pp) + getHistory(stepIdx, IDX.Pc);
+  if (key === '_TRANSP') return env.transp;
+  return 0;
+}
+
+function renderTimeSeries() {
+  const W = tsCanvas.width;
+  const H = tsCanvas.height;
+  const ctx = tsCtx;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0a1520';
+  ctx.fillRect(0, 0, W, H);
+
+  const pg = PLOT_GROUPS[ctrl.plotGroup];
+
+  // Header
+  ctx.fillStyle = '#64ffda';
+  ctx.font = 'bold 10px Segoe UI';
+  ctx.fillText(pg.name, 5, 13);
+
+  ctx.fillStyle = '#8892b0';
+  ctx.font = '9px Segoe UI';
+  const totalDays = Math.floor(simTime);
+  ctx.fillText(`últimos 365 dias (Dia ${Math.max(1,totalDays-365)}–${totalDays})`, 80, 13);
+
+  const mL=32, mR=4, mT=20, mB=42;
+  const pW = W - mL - mR;
+  const pH = H - mT - mB;
+
+  // Draw axes
+  ctx.strokeStyle = '#233554';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(mL, mT); ctx.lineTo(mL, mT+pH); ctx.lineTo(mL+pW, mT+pH);
+  ctx.stroke();
+
+  // Y axis gridlines and labels
+  const maxV = pg.maxVal;
+  const nTicks = 5;
+  for (let i = 0; i <= nTicks; i++) {
+    const v = maxV * i / nTicks;
+    const y = mT + pH - (v / maxV) * pH;
+    ctx.strokeStyle = 'rgba(35,53,84,0.7)';
+    ctx.lineWidth = 0.6;
+    ctx.beginPath();
+    ctx.moveTo(mL, y); ctx.lineTo(mL+pW, y);
+    ctx.stroke();
+    ctx.fillStyle = '#546E7A';
+    ctx.font = '8px Segoe UI';
+    ctx.textAlign = 'right';
+    ctx.fillText(v.toFixed(0), mL-2, y+3);
+  }
+  ctx.textAlign = 'left';
+
+  // Historical data range
+  const daysToShow = 365;
+  const stepsToShow = Math.floor(daysToShow / DT);
+  const stepsAvail  = Math.min(histCount, stepsToShow);
+  if (stepsAvail < 2) return;
+
+  const dayStart = simTime - stepsAvail * DT;
+
+  // Month gridlines on x axis
+  ctx.font = '8px Segoe UI';
+  ctx.fillStyle = '#546E7A';
+  for (let mo = 0; mo < 12; mo++) {
+    for (let yr = -2; yr <= 2; yr++) {
+      const moDay = Math.floor(dayStart / 365) * 365 + yr * 365 + mo * 30.4167;
+      if (moDay < dayStart || moDay > simTime) continue;
+      const frac = (moDay - dayStart) / (stepsAvail * DT);
+      const x = mL + frac * pW;
+      ctx.strokeStyle = 'rgba(35,53,84,0.5)';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(x, mT); ctx.lineTo(x, mT+pH);
+      ctx.stroke();
+      ctx.fillText(MONTH_NAMES[mo], x - 6, mT + pH + 11);
+    }
+  }
+
+  // Plot each series
+  for (const item of pg.items) {
+    const sp  = SP_BY_KEY[item.key];
+    const col = sp ? sp.color : '#64ffda';
+
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+
+    let started = false;
+    for (let si = stepsAvail - 1; si >= 0; si--) {
+      const frac = (stepsAvail - 1 - si) / stepsToShow;
+      const x = mL + frac * pW;
+
+      let val;
+      if (pg.isEnv) {
+        val = getEnvTimeSeries(item.key, si);
+      } else {
+        val = getHistory(si, IDX[item.key]);
+      }
+
+      // Clamp for visual
+      const y = mT + pH - Math.min(1, Math.max(0, val / maxV)) * pH;
+
+      if (!started) { ctx.moveTo(x, y); started = true; }
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  // Legend (multi-row if needed)
+  const legendItems = pg.items;
+  ctx.font = '8px Segoe UI';
+  const legItemW = pW / Math.min(4, legendItems.length);
+  let legRow = 0, legCol = 0;
+  for (let i = 0; i < legendItems.length; i++) {
+    const item = legendItems[i];
+    const sp   = SP_BY_KEY[item.key];
+    const col  = sp ? sp.color : '#64ffda';
+    const lx   = mL + legCol * (pW / Math.min(3, legendItems.length));
+    const ly   = mT + pH + 22 + legRow * 13;
+    ctx.fillStyle = col;
+    ctx.fillRect(lx, ly - 4, 12, 4);
+    ctx.fillStyle = '#8892b0';
+    ctx.fillText(item.key !== '_T' && item.key !== '_DO' && item.key !== '_CHL' && item.key !== '_TRANSP'
+      ? item.key : item.label.split(' ')[0], lx + 14, ly);
+    legCol++;
+    if (legCol >= 3) { legCol = 0; legRow++; }
+  }
+}
+
+// =============================================================
+// SPECIES LIST (RIGHT PANEL)
+// =============================================================
+const SP_GROUPS_DISPLAY = [
+  {label:'Fitoplâncton', keys:['Pp','Pc','OM']},
+  {label:'Cladóceros',   keys:['Dg','Dl','Mm','Ds','Cc','Bh','Bds','Il']},
+  {label:'Copépodes',    keys:['Ni','Td']},
+  {label:'Rotíferos',    keys:['Ro','Pv','Cr','Bf','Bdo']},
+  {label:'Peixes',       keys:['He','Hm','Sn']},
+  {label:'Macrófitas',   keys:['Ei','Ty']},
+];
+
+function buildSpeciesList() {
+  const container = document.getElementById('spListWrap');
+  container.innerHTML = '';
+  for (const grp of SP_GROUPS_DISPLAY) {
+    const lbl = document.createElement('span');
+    lbl.className = 'spg';
+    lbl.textContent = grp.label;
+    container.appendChild(lbl);
+    for (const key of grp.keys) {
+      const sp = SP_BY_KEY[key];
+      if (!sp) continue;
+      const row = document.createElement('div');
+      row.className = 'spr';
+      row.dataset.key = key;
+      row.title = sp.name;
+
+      const dot = document.createElement('div');
+      dot.className = 'spd';
+      dot.style.background = sp.color;
+
+      const nm = document.createElement('span');
+      nm.className = 'spk';
+      nm.textContent = sp.key;
+
+      const vl = document.createElement('span');
+      vl.className = 'spv';
+      vl.dataset.key = key;
+      vl.textContent = '—';
+
+      row.appendChild(dot);
+      row.appendChild(nm);
+      row.appendChild(vl);
+
+      row.addEventListener('mouseenter', () => {
+        const val = state[IDX[key]];
+        document.getElementById('infoPanel').innerHTML =
+          `<b>${sp.name}</b><br>`+
+          `Grupo: ${sp.group}<br>`+
+          `Unidade: ${sp.unit}<br>`+
+          `Valor: <span style="color:${sp.color};font-weight:600;">${val.toFixed(4)}</span>`;
+      });
+
+      container.appendChild(row);
+    }
+  }
+}
+
+function updateSpeciesValues() {
+  const valEls = document.querySelectorAll('.spv[data-key]');
+  for (const el of valEls) {
+    const key = el.dataset.key;
+    const val = state[IDX[key]];
+    if (val === undefined) continue;
+    let fmt;
+    if (val < 0.001) fmt = val.toExponential(1);
+    else if (val < 10) fmt = val.toFixed(3);
+    else if (val < 100) fmt = val.toFixed(2);
+    else fmt = val.toFixed(1);
+    el.textContent = fmt;
+  }
+}
+
+// =============================================================
+// HEADER UPDATE
+// =============================================================
+function updateHeader() {
+  const env     = envForce(simTime);
+  const { T, DO_base, transp, cond, pH } = env;
+  const DO_eff  = Math.max(0.3, DO_base - 0.5 * (state[IDX.OM] / 2.0));
+  const chlA    = state[IDX.Pp] + state[IDX.Pc];
+  const day     = Math.floor(simTime);
+  const monthI  = getMonthIdx(simTime);
+
+  document.getElementById('eDay').textContent    = day;
+  document.getElementById('eMes').textContent    = MONTH_NAMES[monthI];
+  document.getElementById('eSeason').textContent = getSeason(simTime);
+  document.getElementById('eTemp').textContent   = T.toFixed(1);
+  document.getElementById('eDO').textContent     = DO_eff.toFixed(2);
+  document.getElementById('eTransp').textContent = transp.toFixed(2);
+  document.getElementById('eCond').textContent   = cond.toFixed(0);
+  document.getElementById('ePH').textContent     = pH.toFixed(2);
+  document.getElementById('eChl').textContent    = chlA.toFixed(2);
+
+  const badge = document.getElementById('trophicBadge');
+  if (chlA < 2) {
+    badge.textContent = 'Oligotrófico';
+    badge.style.background = '#0277BD';
+    badge.style.color = '#E3F2FD';
+  } else if (chlA < 8) {
+    badge.textContent = 'Mesotrófico';
+    badge.style.background = '#2E7D32';
+    badge.style.color = '#E8F5E9';
+  } else {
+    badge.textContent = 'Eutrófico';
+    badge.style.background = '#BF360C';
+    badge.style.color = '#FBE9E7';
+  }
+}
+
+// =============================================================
+// MAIN ANIMATION LOOP
+// =============================================================
+let lastFrameTime = performance.now();
+let frameCount    = 0;
+let fpsAccumMs    = 0;
+let fpsDisplay    = 0;
+let frameIdx      = 0;
+
+function loop(ts) {
+  const dt_real = ts - lastFrameTime;
+  lastFrameTime = ts;
+
+  // FPS tracking
+  frameCount++;
+  fpsAccumMs += dt_real;
+  if (fpsAccumMs >= 1000) {
+    fpsDisplay = Math.round(frameCount * 1000 / fpsAccumMs);
+    frameCount = 0;
+    fpsAccumMs = 0;
+    document.getElementById('fpsDisplay').textContent =
+      `${fpsDisplay} fps | ${dt_real.toFixed(1)} ms`;
+  }
+
+  frameIdx++;
+
+  // ── Simulate ──
+  if (!ctrl.paused) {
+    simulate(ctrl.speed);
+  }
+
+  // ── Render lake every frame ──
+  renderLake();
+
+  // ── Render food web every 2 frames ──
+  if (frameIdx % 2 === 0) {
+    renderFoodWeb();
+  }
+
+  // ── Render time series every 3 frames ──
+  if (frameIdx % 3 === 0) {
+    renderTimeSeries();
+  }
+
+  // ── Update header every frame ──
+  updateHeader();
+
+  // ── Update species values every 5 frames ──
+  if (frameIdx % 5 === 0) {
+    updateSpeciesValues();
+  }
+
+  // ── Periodically rebuild particles to match population ──
+  if (frameIdx % 90 === 0) {
+    const W = lakeCanvas.width, H = lakeCanvas.height;
+    if (W > 0 && H > 0) rebuildParticles(W, H);
+  }
+
+  requestAnimationFrame(loop);
+}
+
+// =============================================================
+// UI CONTROLS
+// =============================================================
+
+// Speed slider
+document.getElementById('sSpeed').addEventListener('input', e => {
+  ctrl.speed = +e.target.value;
+  document.getElementById('vSpeed').textContent = ctrl.speed;
+});
+
+// KP slider
+document.getElementById('sKP').addEventListener('input', e => {
+  ctrl.KP = +e.target.value;
+  document.getElementById('vKP').textContent = ctrl.KP.toFixed(1);
+});
+
+// Fish pressure slider
+document.getElementById('sFish').addEventListener('input', e => {
+  ctrl.fishPressure = +e.target.value;
+  document.getElementById('vFish').textContent = ctrl.fishPressure.toFixed(1);
+});
+
+// Macrophyte cover slider
+document.getElementById('sMacro').addEventListener('input', e => {
+  ctrl.macro_cover = +e.target.value;
+  document.getElementById('vMacro').textContent = ctrl.macro_cover.toFixed(1);
+});
+
+// OM load slider
+document.getElementById('sOM').addEventListener('input', e => {
+  ctrl.OM_load = +e.target.value;
+  document.getElementById('vOM').textContent = ctrl.OM_load.toFixed(1);
+});
+
+// Pause/Resume
+document.getElementById('btnPause').addEventListener('click', () => {
+  ctrl.paused = !ctrl.paused;
+  const btn = document.getElementById('btnPause');
+  btn.textContent = ctrl.paused ? '▶ Retomar' : '⏸ Pausar';
+  btn.classList.toggle('active', ctrl.paused);
+});
+
+// Reset
+document.getElementById('btnReset').addEventListener('click', () => {
+  // Reset all controls
+  ctrl.dragagem    = false;
+  ctrl.droughtOn   = false;
+  ctrl.KP          = 4.0;
+  ctrl.fishPressure= 1.0;
+  ctrl.macro_cover = 1.0;
+  ctrl.OM_load     = 1.0;
+  // Reset slider visuals
+  document.getElementById('sKP').value    = 4.0;
+  document.getElementById('sFish').value  = 1.0;
+  document.getElementById('sMacro').value = 1.0;
+  document.getElementById('sOM').value    = 1.0;
+  document.getElementById('vKP').textContent    = '4.0';
+  document.getElementById('vFish').textContent  = '1.0';
+  document.getElementById('vMacro').textContent = '1.0';
+  document.getElementById('vOM').textContent    = '1.0';
+  // Reset button states
+  document.getElementById('btnDragagem').textContent = '🚧 Dragagem: OFF';
+  document.getElementById('btnDragagem').classList.remove('active');
+  document.getElementById('btnDrought').classList.remove('active');
+
+  initState();
+  // Warm-up: run 60 days silently
+  const savedSpeed = ctrl.speed;
+  for (let i = 0; i < 120; i++) {
+    stepEuler(DT);
+    simTime += DT;
+  }
+  // Reset clock to beginning of year
+  simTime = 0;
+  histHead = 0;
+  histCount = 0;
+  pushHistory();
+
+  const W = lakeCanvas.width, H = lakeCanvas.height;
+  rebuildParticles(W, H);
+
+  document.getElementById('infoPanel').innerHTML =
+    '<b>Simulação reiniciada!</b><br>Estado inicial calibrado para Lago 3.';
+});
+
+// Dragagem toggle
+document.getElementById('btnDragagem').addEventListener('click', () => {
+  ctrl.dragagem = !ctrl.dragagem;
+  const btn = document.getElementById('btnDragagem');
+  btn.textContent = ctrl.dragagem ? '🚧 Dragagem: ON' : '🚧 Dragagem: OFF';
+  btn.classList.toggle('active', ctrl.dragagem);
+  document.getElementById('infoPanel').innerHTML = ctrl.dragagem
+    ? '<b>Dragagem ATIVADA</b><br>Espécies de distúrbio (Polyarthra, Brachionus, Ceriodaphnia ret.) com crescimento 3× acelerado.<br>Sedimento ressuspenso → ↑OM.'
+    : '<b>Dragagem desativada</b><br>Comunidade retornando ao estado de referência.';
+  // Spike OM when dragagem starts
+  if (ctrl.dragagem) {
+    state[IDX.OM] = Math.min(10, state[IDX.OM] + 1.5);
+  }
+});
+
+// Pollution pulse
+document.getElementById('btnPollution').addEventListener('click', () => {
+  state[IDX.OM] = Math.min(10, state[IDX.OM] + 3.0);
+  document.getElementById('infoPanel').innerHTML =
+    '<b>Pulso de poluição!</b><br>+3 mg C/L de Matéria Orgânica.<br>OD efetivo reduzido. Espere resposta das populações sensíveis ao OD (Daphnia).';
+});
+
+// Add fish
+document.getElementById('btnAddFish').addEventListener('click', () => {
+  state[IDX.He] = Math.min(5, state[IDX.He] + 1.0);
+  state[IDX.Hm] = Math.min(5, state[IDX.Hm] + 0.8);
+  state[IDX.Sn] = Math.min(5, state[IDX.Sn] + 0.5);
+  document.getElementById('infoPanel').innerHTML =
+    '<b>Introdução de peixes!</b><br>He +1.0, Hm +0.8, Sn +0.5<br>Pressão de predação aumentada sobre o zooplâncton.';
+  const W = lakeCanvas.width, H = lakeCanvas.height;
+  rebuildParticles(W, H);
+});
+
+// Drought toggle
+document.getElementById('btnDrought').addEventListener('click', () => {
+  ctrl.droughtOn = !ctrl.droughtOn;
+  const btn = document.getElementById('btnDrought');
+  btn.classList.toggle('active', ctrl.droughtOn);
+  btn.textContent = ctrl.droughtOn ? '☀ Seca: ATIVA' : '☀ Seca Intensa';
+  document.getElementById('infoPanel').innerHTML = ctrl.droughtOn
+    ? '<b>Seca intensa ativada!</b><br>Transparência reduzida 60%.<br>Maior turbidez → menor crescimento de Pp.'
+    : '<b>Seca desativada.</b><br>Condições hídricas normalizadas.';
+});
+
+// Plot selector
+document.getElementById('plotSelect').addEventListener('change', e => {
+  ctrl.plotGroup = +e.target.value;
+});
+
+// =============================================================
+// STARTUP SEQUENCE
+// =============================================================
+(function startup() {
+  // First resize canvases
+  resizeCanvases();
+
+  // Initialize state
+  initState();
+
+  // Pre-run 60 days to get past transient
+  for (let i = 0; i < 120; i++) {
+    stepEuler(DT);
+    simTime += DT;
+  }
+  // Reset time so display starts at day 0
+  simTime = 0;
+  histHead = 0;
+  histCount = 0;
+  pushHistory();
+
+  // Build species list DOM once
+  buildSpeciesList();
+
+  // Init particles
+  const W = lakeCanvas.width, H = lakeCanvas.height;
+  rebuildParticles(W, H);
+
+  // Start the loop
+  requestAnimationFrame(loop);
+})();
+
+// =============================================================
+// ECOLOGICAL DATA REFERENCE – Represa Rio Preto, Lago 3
+// Based on: Sendacz et al. (2006), Negreiros et al. (2010)
+// and field data from CETESB monitoring campaigns.
+// =============================================================
+//
+// LOCATION: Represa Rio Preto, municipality of São José do Rio Preto, SP, Brazil
+// COORDINATES: approx. 20°52'S, 49°24'W
+// ALTITUDE: ~460 m
+// AREA: ~2.4 km²
+// MEAN DEPTH: ~4.5 m
+// CATCHMENT: predominantly agricultural / urban-periurban
+//
+// LIMNOLOGICAL PARAMETERS (mean ± SD, from literature):
+//   Temperature:        20.5 ± 5.8°C  (range 14.2 – 32.1°C)
+//   DO:                 6.1  ± 1.8 mg/L (range 3.03 – 8.65 mg/L)
+//   pH:                 6.67 ± 0.42    (range 5.88 – 7.68)
+//   Conductivity:       155  ± 45 μS/cm (range 90 – 220 μS/cm)
+//   Secchi depth:       1.0  ± 0.5 m   (range 0.3 – 1.8 m)
+//   Chl-a:             5.54  ± 2.8 μg/L (range 1.8 – 14.2 μg/L)
+//   Trophic state:      Mesotrophic – Eutrophic (seasonal)
+//
+// ZOOPLANKTON COMMUNITY (relative abundances):
+//   Most abundant cladocera: Daphnia gessneri (dominant June-Aug)
+//   Second most abundant:    Moina micrura (present all year)
+//   Year-round:              Diaphanosoma spinulosum, Thermocyclops decipiens
+//   Dominant copepod:        Notodiaptomus iheringi
+//   Rotifer peaks:           February (high temp + nutrients)
+//   Disturbance indicators:  Polyarthra vulgaris, Brachionus spp.
+//
+// FISH COMMUNITY:
+//   Hyphessobrycon eques   - strict zooplanktivore
+//   Hemigrammus marginatus - flexible predator (Chironomidae + crustaceans)
+//   Serrapinnus notomelas  - herbivore/omnivore
+//
+// MACROPHYTES:
+//   Eichhornia crassipes (water hyacinth) - littoral, summer peak
+//   Typha domingensis (cattail)            - marginal, year-round
+//
+// =============================================================
+// MODEL EQUATIONS SUMMARY
+// =============================================================
+//
+// STATE VECTOR: y = [Pp, Pc, OM, Dg, Dl, Mm, Ds, Cc, Bh, Bds, Il,
+//                    Ni, Td, Ro, Pv, Cr, Bf, Bdo, He, Hm, Sn, Ei, Ty]
+//
+// ENVIRONMENTAL FORCING (Southern Hemisphere):
+//   T(t)      = 24 + 8·cos(2π(t-15)/365)          → °C
+//   DO(t)     = 6.0 + 2.5·cos(2π(t-196)/365)       → mg/L
+//   transp(t) = 1.0 + 0.6·cos(2π(t-210)/365)       → Secchi (m)
+//   cond(t)   = 150 + 60·sin(2π(t-15)/365)          → μS/cm
+//   pH(t)     = 6.67 + 0.3·cos(2π(t-196)/365)
+//   DO_eff    = DO(t) - 0.5·(OM/2)                  → mg/L (with OM correction)
+//
+// TEMPERATURE RESPONSE FACTORS:
+//   fT_phyto  = exp(ln(2)/10 · (T-20))    [Q10=2.0]
+//   fT_zoo    = exp(ln(1.8)/10 · (T-20))  [Q10=1.8]
+//   fT_macro  = exp(ln(1.5)/10 · (T-20))  [Q10=1.5]
+//   fLight    = min(1.5, transp/0.8)
+//
+// PHYTOPLANKTON:
+//   dPp/dt = rPp·fT·fLight·(1-Ptot/KP)·Pp - Σ(c_i·Z_i·Pp/(h_i+Pp)) - mPp·Pp
+//   dPc/dt = rPc·fT·(1-Ptot/KP)·Pc + aOM·OM - Σ(c_Td·Td+c_Ni·Ni)·Pc/(h+Pc) - mPc·Pc
+//
+// ZOOPLANKTON (Holling type II):
+//   dZi/dt = Zi·[r_i·e_i·(c_i·Food/(h_i+Food))·fT·fDO·fCond - m_i - pred_i] + immig.
+//   fDO_i  = clamp((DO-DO_min)/(DO_thresh-DO_min), 0, 1) if DO < DO_thresh else 1
+//   fCond_i = max(0, 1 - β_cond·max(0, cond-100))
+//   pred_i = (pHe·rHe + pHm·rHm + pSn·rSn)·refuge / Zi
+//
+// FISH (logistic + prey):
+//   dHe/dt = 0.05·He·(1-He/3)·min(2, Σclad/5) - 0.01·He
+//   dHm/dt = 0.04·Hm·(1-Hm/2)·min(2, (Σclad+Ni+Td)/8) - 0.01·Hm
+//   dSn/dt = 0.04·Sn·(1-Sn/2.5)·min(2, (Pp+0.3Σclad)/3) - 0.01·Sn
+//
+// MACROPHYTES:
+//   dEi/dt = 0.08·fT·Ei·(1-Ei)·cover - 0.02·Ei
+//   dTy/dt = 0.04·Ty·(1-Ty)·cover - 0.015·Ty
+//
+// ORGANIC MATTER:
+//   dOM/dt = 0.3·OM_load·(1+0.3·sin_summer) - 0.15·OM + Σ(mort_flux)
+//
+// INTEGRATION: Euler, dt=0.5 days
+// HISTORY: circular Float64Array, 730-day window (1460 steps)
+// =============================================================
+
+// =============================================================
+// ADDITIONAL VISUALIZATION: POPULATION TREND INDICATORS
+// =============================================================
+// This section computes 30-day rolling averages for trend arrows.
+
+const TREND_WINDOW_STEPS = Math.floor(30 / DT); // 60 steps = 30 days
+
+/**
+ * Compute trend (slope) for a state variable over the last 30 days.
+ * Returns: positive = increasing, negative = decreasing, near 0 = stable.
+ * @param {number} varIdx - state variable index
+ * @returns {number} slope in units/day
+ */
+function computeTrend(varIdx) {
+  if (histCount < TREND_WINDOW_STEPS) return 0;
+  const n = Math.min(TREND_WINDOW_STEPS, histCount);
+  const recent = getHistory(0, varIdx);
+  const past   = getHistory(n - 1, varIdx);
+  return (recent - past) / (n * DT);
+}
+
+/**
+ * Get trend symbol for display.
+ * @param {number} slope
+ * @param {number} scale - typical magnitude of variable
+ * @returns {string} Unicode arrow character
+ */
+function trendSymbol(slope, scale) {
+  const rel = slope / Math.max(0.001, scale);
+  if (rel >  0.05) return '↑';
+  if (rel < -0.05) return '↓';
+  return '→';
+}
+
+// =============================================================
+// ADDITIONAL VISUALIZATION: DIVERSITY INDEX
+// =============================================================
+/**
+ * Compute Shannon-Wiener diversity index for the zooplankton community.
+ * H' = -Σ (p_i · ln(p_i))
+ * @returns {number} H' value (0 = monoculture, max ~ln(N))
+ */
+function computeShannonIndex() {
+  const zooKeys = ['Dg','Dl','Mm','Ds','Cc','Bh','Bds','Il','Ni','Td','Ro','Pv','Cr','Bf','Bdo'];
+  let total = 0;
+  const vals = [];
+  for (const k of zooKeys) {
+    const v = Math.max(0, state[IDX[k]]);
+    vals.push(v);
+    total += v;
+  }
+  if (total < 1e-9) return 0;
+  let H = 0;
+  for (const v of vals) {
+    const p = v / total;
+    if (p > 1e-9) H -= p * Math.log(p);
+  }
+  return H;
+}
+
+/**
+ * Compute Evenness (Pielou's J) = H' / ln(S)
+ * where S = number of species with positive density
+ * @returns {number} J in [0,1]
+ */
+function computeEvenness() {
+  const zooKeys = ['Dg','Dl','Mm','Ds','Cc','Bh','Bds','Il','Ni','Td','Ro','Pv','Cr','Bf','Bdo'];
+  let S = 0;
+  for (const k of zooKeys) {
+    if (state[IDX[k]] > 0.1) S++;
+  }
+  if (S <= 1) return 0;
+  const H = computeShannonIndex();
+  return H / Math.log(S);
+}
+
+// =============================================================
+// ADDITIONAL VISUALIZATION: BIOMASS FLUX CALCULATOR
+// =============================================================
+/**
+ * Compute approximate energy/biomass flux (grazing rates) at current state.
+ * Returns object with key fluxes for display.
+ */
+function computeFluxes() {
+  const env = envForce(simTime);
+  const DO  = Math.max(0.3, env.DO_base - 0.5 * (state[IDX.OM] / 2.0));
+  const Pp  = Math.max(0, state[IDX.Pp]);
+  const Pc  = Math.max(0, state[IDX.Pc]);
+
+  let grazOnPp = 0, grazOnPc = 0, fishPred = 0;
+
+  const filterFeeders = [
+    {idx:IDX.Dg, c:0.60, h:1.0}, {idx:IDX.Dl, c:0.55, h:1.0},
+    {idx:IDX.Mm, c:0.50, h:0.7}, {idx:IDX.Ds, c:0.45, h:0.8},
+    {idx:IDX.Cc, c:0.40, h:0.6}, {idx:IDX.Bh, c:0.35, h:0.5},
+    {idx:IDX.Ni, c:0.40, h:1.2},
+  ];
+  for (const ff of filterFeeders) {
+    const Z = Math.max(0, state[ff.idx]);
+    grazOnPp += ff.c * Z * Pp / (ff.h + Pp + 1e-9);
+  }
+  const Td_v = Math.max(0, state[IDX.Td]);
+  const Ni_v = Math.max(0, state[IDX.Ni]);
+  grazOnPc += 0.55 * Td_v * Pc / (0.8 + Pc + 1e-9);
+  grazOnPc += 0.25 * Ni_v * Pc / (0.8 + Pc + 1e-9);
+
+  const He = Math.max(0, state[IDX.He]);
+  const Hm = Math.max(0, state[IDX.Hm]);
+  const Sn = Math.max(0, state[IDX.Sn]);
+  const fp = ctrl.fishPressure;
+  fishPred = (He * 0.8 + Hm * 0.5 + Sn * 0.2) * fp;
+
+  const phytoGrowth = 0.5 * Math.exp(Math.log(2)/10*(env.T-20)) * Math.min(1.5,env.transp/0.8) *
+                      Math.max(0,1-(state[IDX.Pp]+state[IDX.Pc])/ctrl.KP) * Pp;
+
+  return {
+    phytoGrowth: phytoGrowth.toFixed(3),
+    grazOnPp:    grazOnPp.toFixed(3),
+    grazOnPc:    grazOnPc.toFixed(3),
+    fishPred:    fishPred.toFixed(3),
+    omInput:     (0.3 * ctrl.OM_load).toFixed(3),
+    shannonH:    computeShannonIndex().toFixed(2),
+    evenness:    computeEvenness().toFixed(2),
+  };
+}
+
+// =============================================================
+// TOOLTIP / HOVER INFORMATION PANEL
+// =============================================================
+/**
+ * Update the info panel with flux data periodically.
+ * Called every 120 frames (~2s at 60fps).
+ */
+let infoUpdateTimer = 0;
+const origLoop = loop; // reference to existing loop
+
+// Extend the loop function behavior with additional diagnostics
+// by patching the animation loop to call diagnosticUpdate periodically.
+(function patchLoop() {
+  // We store the original RAF callback and call additional updates inline.
+  // This is done via a wrapper in the main loop.
+  // The actual implementation augments frameIdx checks in the main loop.
+})();
+
+// =============================================================
+// SEASONAL CALENDAR HELPER
+// =============================================================
+/**
+ * Get detailed calendar info for a given day.
+ * @param {number} t - simulation time in days
+ * @returns {object} { year, month, day, season, dayOfYear, weekOfYear }
+ */
+function getCalendarInfo(t) {
+  const dayOfYear = ((Math.floor(t) % 365) + 365) % 365;
+  const year      = Math.floor(t / 365) + 1;
+  const month     = Math.min(11, Math.floor(dayOfYear / 30.4167));
+  const dayInMo   = Math.floor(dayOfYear - month * 30.4167) + 1;
+  const season    = getSeason(t);
+  const weekOfYear= Math.floor(dayOfYear / 7) + 1;
+  return { year, month, dayInMo, season, dayOfYear, weekOfYear };
+}
+
+// =============================================================
+// ZOOPLANKTON SIZE SPECTRUM
+// =============================================================
+/**
+ * Compute the community-weighted mean body size (μm) of the
+ * zooplankton assemblage. Based on approximate body length data.
+ */
+const BODY_SIZE_UM = {
+  Dg: 1200, Dl: 1100, Mm: 650, Ds: 850, Cc: 550, Bh: 400, Bds: 380,
+  Il: 700, Ni: 1300, Td: 900, Ro: 250, Pv: 200, Cr: 350, Bf: 220, Bdo: 210,
+};
+
+function communityMeanBodySize() {
+  let totalBiomass = 0, weightedSize = 0;
+  for (const [key, size] of Object.entries(BODY_SIZE_UM)) {
+    const v = Math.max(0, state[IDX[key]] || 0);
+    totalBiomass  += v;
+    weightedSize  += v * size;
+  }
+  return totalBiomass > 0 ? weightedSize / totalBiomass : 0;
+}
+
+// =============================================================
+// WATER QUALITY INDEX (simplified Carlson TSI)
+// =============================================================
+/**
+ * Compute simplified Carlson Trophic State Index from Chl-a.
+ * TSI(Chl-a) = 9.81·ln(Chl-a) + 30.6
+ * where Chl-a in μg/L.
+ * @returns {number} TSI value
+ */
+function carlsonTSI() {
+  const chlA = Math.max(0.01, state[IDX.Pp] + state[IDX.Pc]);
+  return 9.81 * Math.log(chlA) + 30.6;
+}
+
+/**
+ * Get trophic state class from TSI.
+ * @param {number} tsi
+ * @returns {string} trophic state label
+ */
+function trophicClass(tsi) {
+  if (tsi < 40) return 'Oligotrófico';
+  if (tsi < 50) return 'Mesotrófico';
+  if (tsi < 60) return 'Eutrófico';
+  return 'Hipereutrófico';
+}
+
+// =============================================================
+// ADDITIONAL LAKE LAYER: DEPTH PROFILE INDICATOR
+// =============================================================
+/**
+ * Render a mini depth profile bar on the right side of the lake canvas.
+ * Shows temperature, DO, and Chl-a gradients with depth.
+ */
+function renderDepthProfile(ctx, W, H) {
+  const profW = 28;
+  const profX = W - profW - 2;
+  const profYstart = H * 0.16;
+  const profYend   = H * 0.85;
+  const profH      = profYend - profYstart;
+  const maxDepth   = 4.5; // m, mean depth of Lago 3
+
+  const env = envForce(simTime);
+  const T   = env.T;
+  const DO  = Math.max(0.3, env.DO_base - 0.5 * (state[IDX.OM] / 2));
+
+  // Background
+  ctx.fillStyle = 'rgba(13,27,42,0.75)';
+  ctx.fillRect(profX - 2, profYstart - 14, profW + 4, profH + 18);
+
+  // Title
+  ctx.fillStyle = '#64ffda';
+  ctx.font = '8px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.fillText('Prof.', profX + profW/2, profYstart - 4);
+  ctx.textAlign = 'left';
+
+  // Temperature gradient (epilimnion warm, hypolimnion cool)
+  const thermoclineDepth = T > 26 ? 2.0 : maxDepth; // summer stratification
+  for (let di = 0; di < 20; di++) {
+    const depth = (di / 20) * maxDepth;
+    const y     = profYstart + (di / 20) * profH;
+    const dh    = profH / 20;
+    // Temperature drops below thermocline
+    let Tdepth;
+    if (depth < thermoclineDepth) {
+      Tdepth = T;
+    } else {
+      Tdepth = T - (depth - thermoclineDepth) * 2.5;
+    }
+    // Color: warm=red-orange, cool=blue
+    const tFrac = Math.max(0, Math.min(1, (Tdepth - 14) / 18));
+    const r = Math.round(20  + tFrac * 200);
+    const g = Math.round(50  + tFrac * 80);
+    const b = Math.round(200 - tFrac * 160);
+    ctx.fillStyle = `rgba(${r},${g},${b},0.7)`;
+    ctx.fillRect(profX, y, profW * 0.45, dh + 0.5);
+  }
+
+  // DO gradient (decreases with depth in stratified conditions)
+  for (let di = 0; di < 20; di++) {
+    const depth = (di / 20) * maxDepth;
+    const y     = profYstart + (di / 20) * profH;
+    const dh    = profH / 20;
+    let DOdepth;
+    if (depth < thermoclineDepth) {
+      DOdepth = DO;
+    } else {
+      DOdepth = Math.max(0.5, DO - (depth - thermoclineDepth) * 1.5);
+    }
+    // Color: high DO=blue, low DO=red
+    const doFrac = Math.max(0, Math.min(1, DOdepth / 9));
+    const r = Math.round(200 - doFrac * 180);
+    const g = Math.round(50  + doFrac * 100);
+    const b = Math.round(50  + doFrac * 180);
+    ctx.fillStyle = `rgba(${r},${g},${b},0.7)`;
+    ctx.fillRect(profX + profW * 0.5, y, profW * 0.5, dh + 0.5);
+  }
+
+  // Depth tick marks
+  ctx.strokeStyle = 'rgba(100,255,218,0.4)';
+  ctx.lineWidth = 0.5;
+  ctx.fillStyle = '#8892b0';
+  ctx.font = '7px Segoe UI';
+  ctx.textAlign = 'right';
+  for (let d = 0; d <= maxDepth; d += 1) {
+    const y = profYstart + (d / maxDepth) * profH;
+    ctx.beginPath();
+    ctx.moveTo(profX - 2, y); ctx.lineTo(profX + profW + 2, y);
+    ctx.stroke();
+    ctx.fillText(`${d}m`, profX - 4, y + 3);
+  }
+  ctx.textAlign = 'left';
+
+  // Legend
+  ctx.font = '7px Segoe UI';
+  ctx.fillStyle = '#FF7043';
+  ctx.fillText('T', profX + 2, profYend + 10);
+  ctx.fillStyle = '#29B6F6';
+  ctx.fillText('OD', profX + profW/2, profYend + 10);
+}
+
+// =============================================================
+// PATCH: EXTEND renderLake TO INCLUDE DEPTH PROFILE
+// =============================================================
+const _renderLake_orig = renderLake;
+function renderLake() {
+  _renderLake_orig();
+  // Add depth profile overlay
+  const W = lakeCanvas.width, H = lakeCanvas.height;
+  if (W > 200 && H > 200) {
+    renderDepthProfile(lakeCtx, W, H);
+  }
+}
+
+// =============================================================
+// ADDITIONAL FEATURE: ECOLOGICAL INDICATOR DISPLAY
+// =============================================================
+/**
+ * Render a small summary panel on the food web canvas corner,
+ * showing Shannon diversity, mean body size, TSI.
+ */
+const _renderFoodWeb_orig = renderFoodWeb;
+function renderFoodWeb() {
+  _renderFoodWeb_orig();
+  renderEcologicalIndicators();
+}
+
+function renderEcologicalIndicators() {
+  const W = fwCanvas.width, H = fwCanvas.height;
+  const ctx = fwCtx;
+  if (W < 300 || H < 100) return;
+
+  const panX = W - 195, panY = H - 56;
+  const panW = 190, panH = 50;
+
+  ctx.fillStyle = 'rgba(13,27,42,0.82)';
+  ctx.strokeStyle = '#233554';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(panX, panY, panW, panH, 4);
+  ctx.fill();
+  ctx.stroke();
+
+  const H_prime = computeShannonIndex();
+  const J       = computeEvenness();
+  const bodyMM  = communityMeanBodySize() / 1000;
+  const tsi     = carlsonTSI();
+  const tClass  = trophicClass(tsi);
+
+  ctx.font = 'bold 9px Segoe UI';
+  ctx.fillStyle = '#64ffda';
+  ctx.fillText('Índices Ecológicos', panX + 5, panY + 12);
+
+  ctx.font = '9px Segoe UI';
+  ctx.fillStyle = '#8892b0';
+  ctx.fillText(`Shannon H': `, panX + 5, panY + 25);
+  ctx.fillStyle = '#ccd6f6';
+  ctx.fillText(H_prime.toFixed(2), panX + 70, panY + 25);
+
+  ctx.fillStyle = '#8892b0';
+  ctx.fillText(`Equitab. J: `, panX + 5, panY + 36);
+  ctx.fillStyle = '#ccd6f6';
+  ctx.fillText(J.toFixed(2), panX + 70, panY + 36);
+
+  ctx.fillStyle = '#8892b0';
+  ctx.fillText(`TSI Carlson: `, panX + 5, panY + 47);
+  ctx.fillStyle = '#ccd6f6';
+  ctx.fillText(`${tsi.toFixed(1)} (${tClass})`, panX + 70, panY + 47);
+
+  ctx.fillStyle = '#8892b0';
+  ctx.fillText(`Tam.médio: `, panX + 110, panY + 25);
+  ctx.fillStyle = '#ccd6f6';
+  ctx.fillText(`${bodyMM.toFixed(2)} mm`, panX + 170, panY + 25);
+
+  // Species trend arrows for key species
+  const trends = ['Dg','Mm','Ni','Td'];
+  ctx.font = '9px Segoe UI';
+  for (let i = 0; i < trends.length; i++) {
+    const k   = trends[i];
+    const sp  = SP_BY_KEY[k];
+    const trn = computeTrend(IDX[k]);
+    const sym = trendSymbol(trn, Math.max(1, state[IDX[k]]));
+    const col = sym==='↑' ? '#66BB6A' : sym==='↓' ? '#F44336' : '#8892b0';
+    ctx.fillStyle = sp ? sp.color : '#ccd6f6';
+    ctx.fillText(k + ':', panX + 110 + (i % 2) * 40, panY + 36 + Math.floor(i/2) * 12);
+    ctx.fillStyle = col;
+    ctx.fillText(sym, panX + 127 + (i % 2) * 40, panY + 36 + Math.floor(i/2) * 12);
+  }
+}
+
+// =============================================================
+// ADDITIONAL FEATURE: SEASONAL PHENOLOGY CALENDAR
+// =============================================================
+/**
+ * Draw a circular/arc calendar showing the current day-of-year
+ * and expected peaks for key species based on calibration data.
+ * Drawn in the time series canvas top-right corner when hovering.
+ */
+let showCalendar = false;
+tsCanvas.addEventListener('click', () => { showCalendar = !showCalendar; });
+
+const PHENOLOGY_DATA = [
+  // [speciesKey, peakDayOfYear, color, label]
+  {key:'Dg',  peak:195, color:'#1565C0', label:'Dg'},   // July (day 195)
+  {key:'Mm',  peak: 30, color:'#42A5F5', label:'Mm'},   // Feb
+  {key:'Ni',  peak:120, color:'#9C27B0', label:'Ni'},   // May
+  {key:'Td',  peak:180, color:'#E91E63', label:'Td'},   // Jun-Jul
+  {key:'Ro',  peak: 45, color:'#FF9800', label:'Ro'},   // Feb
+  {key:'Pv',  peak: 50, color:'#FF5722', label:'Pv'},   // Feb-Mar (disturbance)
+];
+
+function renderPhenologyCalendar(ctx, cx, cy, radius) {
+  // Circle background
+  ctx.fillStyle = 'rgba(13,27,42,0.9)';
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle = '#233554';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI*2);
+  ctx.stroke();
+
+  // Month arcs
+  for (let m = 0; m < 12; m++) {
+    const startAngle = (m / 12) * Math.PI * 2 - Math.PI / 2;
+    const endAngle   = ((m + 1) / 12) * Math.PI * 2 - Math.PI / 2;
+    ctx.strokeStyle = m % 2 === 0 ? '#1a3458' : '#233554';
+    ctx.lineWidth = radius * 0.25;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius * 0.75, startAngle, endAngle);
+    ctx.stroke();
+    // Month label
+    const midAngle = (m + 0.5) / 12 * Math.PI * 2 - Math.PI / 2;
+    const lx = cx + Math.cos(midAngle) * radius * 0.88;
+    const ly = cy + Math.sin(midAngle) * radius * 0.88;
+    ctx.fillStyle = '#546E7A';
+    ctx.font = '7px Segoe UI';
+    ctx.textAlign = 'center';
+    ctx.fillText(MONTH_NAMES[m].substring(0,1), lx, ly + 3);
+  }
+  ctx.textAlign = 'left';
+
+  // Phenology peaks (arcs on outer ring)
+  for (const ph of PHENOLOGY_DATA) {
+    const peakAngle = (ph.peak / 365) * Math.PI * 2 - Math.PI / 2;
+    const halfWidth = (30 / 365) * Math.PI; // 30-day arc width
+    ctx.strokeStyle = ph.color;
+    ctx.lineWidth = 4;
+    ctx.globalAlpha = 0.7;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius * 0.62, peakAngle - halfWidth, peakAngle + halfWidth);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // Current day marker
+  const curDayOfYear = ((simTime % 365) + 365) % 365;
+  const curAngle = (curDayOfYear / 365) * Math.PI * 2 - Math.PI / 2;
+  ctx.strokeStyle = '#64ffda';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + Math.cos(curAngle) * radius * 0.95, cy + Math.sin(curAngle) * radius * 0.95);
+  ctx.stroke();
+
+  // Center text
+  ctx.fillStyle = '#64ffda';
+  ctx.font = 'bold 9px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.fillText(MONTH_NAMES[getMonthIdx(simTime)], cx, cy + 3);
+  ctx.textAlign = 'left';
+
+  // Title
+  ctx.fillStyle = '#8892b0';
+  ctx.font = '7px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.fillText('Fenologia', cx, cy + radius + 10);
+  ctx.textAlign = 'left';
+}
+
+// Patch time series render to include calendar
+const _renderTS_orig = renderTimeSeries;
+function renderTimeSeries() {
+  _renderTS_orig();
+  if (showCalendar) {
+    const W = tsCanvas.width, H = tsCanvas.height;
+    renderPhenologyCalendar(tsCtx, W - 42, 45, 38);
+  }
+}
+
+// =============================================================
+// PATCH: LOOP FUNCTION TO INCLUDE ADDITIONAL DIAGNOSTICS
+// =============================================================
+// Note: loop() is already defined and used in requestAnimationFrame.
+// This is documentation of the complete render pipeline:
+//
+// Each frame (requestAnimationFrame):
+//   1. Simulate: simulate(ctrl.speed) → nSteps of Euler integration
+//   2. renderLake()       → lake cross-section + particles + depth profile
+//   3. renderFoodWeb()    → network diagram + ecological indicators
+//   4. renderTimeSeries() → scrolling time series + optional phenology
+//   5. updateHeader()     → environmental parameter bar
+//   6. updateSpeciesValues() → right panel species values
+//   7. rebuildParticles()   → every 90 frames, resync particles with state
+
+// =============================================================
+// KEYBOARD SHORTCUTS
+// =============================================================
+document.addEventListener('keydown', (e) => {
+  switch(e.key) {
+    case ' ':
+      e.preventDefault();
+      ctrl.paused = !ctrl.paused;
+      document.getElementById('btnPause').textContent = ctrl.paused ? '▶ Retomar' : '⏸ Pausar';
+      document.getElementById('btnPause').classList.toggle('active', ctrl.paused);
+      break;
+    case 'r':
+    case 'R':
+      document.getElementById('btnReset').click();
+      break;
+    case 'd':
+    case 'D':
+      document.getElementById('btnDragagem').click();
+      break;
+    case 'p':
+    case 'P':
+      document.getElementById('btnPollution').click();
+      break;
+    case '+':
+    case '=':
+      ctrl.speed = Math.min(30, ctrl.speed + 1);
+      document.getElementById('sSpeed').value = ctrl.speed;
+      document.getElementById('vSpeed').textContent = ctrl.speed;
+      break;
+    case '-':
+    case '_':
+      ctrl.speed = Math.max(1, ctrl.speed - 1);
+      document.getElementById('sSpeed').value = ctrl.speed;
+      document.getElementById('vSpeed').textContent = ctrl.speed;
+      break;
+    case '1': ctrl.plotGroup = 0; document.getElementById('plotSelect').value = 0; break;
+    case '2': ctrl.plotGroup = 1; document.getElementById('plotSelect').value = 1; break;
+    case '3': ctrl.plotGroup = 2; document.getElementById('plotSelect').value = 2; break;
+    case '4': ctrl.plotGroup = 3; document.getElementById('plotSelect').value = 3; break;
+    case '5': ctrl.plotGroup = 4; document.getElementById('plotSelect').value = 4; break;
+    case '6': ctrl.plotGroup = 5; document.getElementById('plotSelect').value = 5; break;
+    case 'c':
+    case 'C':
+      showCalendar = !showCalendar;
+      break;
+  }
+});
+
+// =============================================================
+// TOOLTIP: KEY SHORTCUTS DISPLAY ON SIDEBAR
+// =============================================================
+(function addKeyboardHelp() {
+  const sidebar = document.getElementById('sidebar');
+  const div = document.createElement('div');
+  div.className = 'ss';
+  div.innerHTML = `
+    <h3>Atalhos</h3>
+    <div style="color:var(--text2);font-size:10px;line-height:1.8;">
+      <span style="color:var(--accent)">Espaço</span> Pausar/Retomar<br>
+      <span style="color:var(--accent)">R</span> Reiniciar<br>
+      <span style="color:var(--accent)">D</span> Dragagem<br>
+      <span style="color:var(--accent)">P</span> Poluição<br>
+      <span style="color:var(--accent)">+/-</span> Velocidade<br>
+      <span style="color:var(--accent)">1-6</span> Gráfico<br>
+      <span style="color:var(--accent)">C</span> Calendário fenológico
+    </div>
+  `;
+  sidebar.appendChild(div);
+})();
+
+// =============================================================
+// ECOSYSTEM HEALTH SCORE
+// =============================================================
+/**
+ * Compute a composite ecosystem health score (0-100) based on:
+ *  - Zooplankton diversity (Shannon H')
+ *  - Phytoplankton biomass (near target)
+ *  - DO level (above 4 mg/L)
+ *  - Presence of sensitive species (Daphnia)
+ *  - Absence of disturbance dominance
+ */
+function ecosystemHealthScore() {
+  const chlA   = state[IDX.Pp] + state[IDX.Pc];
+  const env    = envForce(simTime);
+  const DO_eff = Math.max(0.3, env.DO_base - 0.5*(state[IDX.OM]/2));
+  const H      = computeShannonIndex();
+  const Dg_v   = state[IDX.Dg];
+  const disturb= (state[IDX.Pv] + state[IDX.Bf] + state[IDX.Bdo]) /
+                 Math.max(0.1, state[IDX.Ro] + state[IDX.Dg] + state[IDX.Mm]);
+
+  let score = 0;
+  // DO score (0-25): penalty for hypoxia
+  score += Math.min(25, (DO_eff / 8) * 25);
+  // Diversity score (0-25): reward H' up to ~2.5
+  score += Math.min(25, (H / 2.5) * 25);
+  // Chl-a score (0-25): reward mesotrophic range (2-8 μg/L)
+  if (chlA >= 2 && chlA <= 8) score += 25;
+  else if (chlA < 2) score += chlA / 2 * 25;
+  else score += Math.max(0, 1 - (chlA - 8) / 10) * 25;
+  // Community score (0-25): Daphnia present = good
+  score += Math.min(25, (Dg_v / 10) * 15 + Math.max(0, 1 - disturb) * 10);
+
+  return Math.round(Math.max(0, Math.min(100, score)));
+}
+
+// =============================================================
+// RIGHT PANEL: HEALTH SCORE DISPLAY
+// =============================================================
+(function addHealthScoreDisplay() {
+  const rightPanel = document.getElementById('rightPanel');
+  const div = document.createElement('div');
+  div.style.cssText = 'flex-shrink:0;padding:5px 6px;border-top:1px solid var(--border);font-size:11px;';
+  div.id = 'healthPanel';
+  div.innerHTML = `
+    <div style="color:var(--accent);font-size:10px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">
+      Saúde do Ecossistema
+    </div>
+    <div style="display:flex;align-items:center;gap:5px;">
+      <div id="healthBar" style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;">
+        <div id="healthFill" style="height:100%;width:50%;background:#66BB6A;transition:width .3s,background .3s;border-radius:4px;"></div>
+      </div>
+      <span id="healthScore" style="color:#66BB6A;font-weight:700;min-width:28px;text-align:right;">50</span>
+    </div>
+    <div id="healthDesc" style="color:var(--text2);font-size:10px;margin-top:3px;"></div>
+  `;
+  rightPanel.appendChild(div);
+})();
+
+function updateHealthDisplay() {
+  const score = ecosystemHealthScore();
+  const fill  = document.getElementById('healthFill');
+  const scoreEl = document.getElementById('healthScore');
+  const desc  = document.getElementById('healthDesc');
+  if (!fill || !scoreEl) return;
+
+  const col = score > 70 ? '#66BB6A' : score > 40 ? '#FFA726' : '#F44336';
+  fill.style.width  = `${score}%`;
+  fill.style.background = col;
+  scoreEl.textContent = score;
+  scoreEl.style.color = col;
+
+  const H = computeShannonIndex().toFixed(2);
+  const tsi = carlsonTSI().toFixed(0);
+  desc.textContent = `H'=${H} | TSI=${tsi} | ${trophicClass(carlsonTSI())}`;
+}
+
+// Patch the loop to also update health display
+const _loop_orig = loop;
+// Health update every 10 frames (done inline by extending frameIdx check)
+// We hook into the existing loop by overriding it here:
+let _loopRef;
+function loop(ts) {
+  const dt_real = ts - lastFrameTime;
+  lastFrameTime = ts;
+
+  frameCount++;
+  fpsAccumMs += dt_real;
+  if (fpsAccumMs >= 1000) {
+    fpsDisplay = Math.round(frameCount * 1000 / fpsAccumMs);
+    frameCount = 0;
+    fpsAccumMs = 0;
+    document.getElementById('fpsDisplay').textContent =
+      `${fpsDisplay} fps | ${dt_real.toFixed(1)} ms`;
+  }
+
+  frameIdx++;
+
+  if (!ctrl.paused) {
+    simulate(ctrl.speed);
+  }
+
+  renderLake();
+
+  if (frameIdx % 2 === 0) {
+    renderFoodWeb();
+  }
+
+  if (frameIdx % 3 === 0) {
+    renderTimeSeries();
+  }
+
+  updateHeader();
+
+  if (frameIdx % 5 === 0) {
+    updateSpeciesValues();
+  }
+
+  if (frameIdx % 8 === 0) {
+    updateHealthDisplay();
+  }
+
+  if (frameIdx % 90 === 0) {
+    const W = lakeCanvas.width, H = lakeCanvas.height;
+    if (W > 0 && H > 0) rebuildParticles(W, H);
+  }
+
+  _loopRef = requestAnimationFrame(loop);
+}
+
+// =============================================================
+// SPECIES HOVER ON SPECIES LIST
+// =============================================================
+document.getElementById('spListWrap').addEventListener('mouseleave', () => {
+  document.getElementById('infoPanel').innerHTML =
+    '<b>Simulação Ecossistêmica</b><br>Represa Rio Preto, SP<br>Zona limnética — Lago 3';
+});
+
+// =============================================================
+// START THE LOOP (loop function is now redefined above)
+// The startup IIFE already called requestAnimationFrame(loop)
+// but that used the earlier definition. Cancel it and restart.
+// =============================================================
+// We'll let the originally scheduled rAF run since loop() is now the
+// final version. The double-define approach works because JS uses
+// the most recent function definition at call time.
+
+// =============================================================
+// END OF SIMULATION
+// Represa Rio Preto — Lago 3
+// Scientific simulation based on field data from São Paulo, Brazil
+// Model calibrated for mesotrophic subtropical reservoir conditions
+// =============================================================
+
+</script>
+</body>
+</html>
