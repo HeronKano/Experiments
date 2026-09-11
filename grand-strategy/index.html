@@ -1,104 +1,49 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Coroas & Fronteiras</title>
-<style>
-:root{--bg:#0b1015;--panel:#141c24;--panel2:#10171e;--line:#2a3946;--text:#e8eef3;--muted:#92a4b3;--gold:#d4b15a;--good:#70bd8b;--bad:#d66c71;--blue:#6d91bd}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#17232e,#0b1015 55%);color:var(--text);font-family:Inter,system-ui,sans-serif;min-height:100vh}button{font:inherit}.top{height:66px;display:flex;align-items:center;gap:16px;padding:0 18px;background:#0c1218eF;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}.brand{min-width:220px}.brand b{font:700 19px Georgia,serif;letter-spacing:.04em}.brand small{display:block;color:var(--muted);font-size:10px;margin-top:2px}.res{display:flex;gap:8px;flex:1;justify-content:center;flex-wrap:wrap}.chip{background:#111922;border:1px solid var(--line);border-radius:7px;padding:6px 9px;min-width:78px}.chip span{display:block;color:var(--muted);font-size:9px;text-transform:uppercase}.chip b{font-size:14px}.clock{text-align:right}.clock b{display:block;font-family:Georgia,serif}.clock small{color:var(--muted)}.next{border:1px solid #a68740;background:#80672f;color:#fff3cb;border-radius:7px;padding:10px 13px;font-weight:700;cursor:pointer}.game{display:grid;grid-template-columns:minmax(0,1fr) 355px;gap:12px;padding:12px;min-height:calc(100vh - 66px)}.card{background:#121a22;border:1px solid var(--line);border-radius:12px;overflow:hidden}.maphead{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;border-bottom:1px solid var(--line);background:#0f161d}.maphead small{color:var(--muted)}.mapbox{position:relative;min-height:650px;background:linear-gradient(180deg,#0c2630,#12313b 48%,#0b232d);overflow:hidden}.mapbox:after{content:"MAR INTERIOR";position:absolute;right:5%;bottom:5%;font:italic 20px Georgia,serif;letter-spacing:.16em;color:#b7d2dc24;pointer-events:none}svg{width:100%;height:650px;display:block}.prov{stroke:#081116;stroke-width:5;cursor:pointer;transition:.15s}.prov:hover{filter:brightness(1.14)}.prov.sel{stroke:#f0db8f;stroke-width:8}.prov.enemy{stroke:#d87176;stroke-dasharray:11 7}.lbl{fill:white;font-weight:800;font-size:15px;text-anchor:middle;pointer-events:none;text-shadow:0 2px 3px #000}.sub{fill:#e8f0f5;opacity:.7;font-size:10px;text-anchor:middle;pointer-events:none}.army circle{fill:#0d141a;stroke:#edf2f4;stroke-width:2}.army text{fill:white;font-size:11px;font-weight:800;text-anchor:middle;dominant-baseline:middle;pointer-events:none}.legend{min-height:42px;padding:8px 12px;border-top:1px solid var(--line);display:flex;gap:13px;align-items:center;flex-wrap:wrap;font-size:10px;color:#bac6ce}.dot{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:5px}.side{display:flex;flex-direction:column}.tabs{display:grid;grid-template-columns:repeat(4,1fr);background:#0f161d;border-bottom:1px solid var(--line)}.tab{padding:12px 3px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);font-size:10px;cursor:pointer}.tab.active{color:#f2dfa2;border-color:var(--gold);background:#17212a}.pane{display:none;padding:15px;overflow:auto}.pane.active{display:block}.pane h2{font:700 21px Georgia,serif;margin:0 0 4px}.owner{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}.owner i{width:9px;height:9px;border-radius:50%;display:inline-block}.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:13px 0}.stat{background:#0e151b;border:1px solid var(--line);padding:9px;border-radius:8px}.stat span{display:block;font-size:9px;color:var(--muted);text-transform:uppercase}.stat b{font-size:15px}.section{margin-top:15px}.section h3{font:700 14px Georgia,serif;margin:0 0 8px;color:#dbe4e9}.btns{display:grid;grid-template-columns:1fr 1fr;gap:7px}.btn{padding:9px;border:1px solid var(--line);border-radius:7px;background:#18232d;color:var(--text);cursor:pointer;text-align:left;font-size:11px}.btn:hover{background:#21303b}.btn strong{display:block;font-size:11px}.btn small{color:var(--muted)}.btn.red{border-color:#714044;background:#3b2225}.btn:disabled{opacity:.4;cursor:not-allowed}.nation{padding:9px;border:1px solid var(--line);border-radius:8px;margin:6px 0;background:#0f161c;cursor:pointer}.nation:hover{background:#19232c}.nation .row{display:flex;justify-content:space-between;align-items:center}.nation small{color:var(--muted)}.bar{height:5px;background:#222e37;border-radius:3px;margin-top:6px;overflow:hidden}.bar i{display:block;height:100%;background:#7892ae}.log{background:#0d141a;border:1px solid var(--line);border-radius:8px;padding:9px;height:170px;overflow:auto;font-size:10px;color:#b8c5ce}.log div{padding:4px 0;border-bottom:1px solid #202b33}.log b{color:#e5c974}.notice{padding:9px;border-left:3px solid var(--gold);background:#221f16;border-radius:4px;font-size:11px;color:#e6d8ac;margin-bottom:10px}.modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;z-index:40;padding:16px}.modal.show{display:flex}.dialog{max-width:460px;width:100%;background:#151e26;border:1px solid #43515d;border-radius:12px;padding:18px;box-shadow:0 24px 80px #000a}.dialog h2{font:700 22px Georgia,serif;margin:0 0 8px}.dialog p{color:#bac5ce;font-size:13px;line-height:1.5}.dialog button{margin-top:8px;width:100%;padding:10px;border:1px solid var(--line);border-radius:7px;background:#1d2933;color:white;cursor:pointer}@media(max-width:900px){.top{height:auto;flex-wrap:wrap;padding:10px}.brand{min-width:auto}.res{order:3;width:100%}.game{grid-template-columns:1fr}.mapbox,svg{min-height:520px;height:520px}.side{min-height:520px}}
-</style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Eryndor — Simulação Geopolítica</title>
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<div class="top">
-  <div class="brand"><b>COROAS & FRONTEIRAS</b><small>um protótipo de grand strategy</small></div>
-  <div class="res">
-    <div class="chip"><span>Tesouro</span><b id="gold">0</b></div>
-    <div class="chip"><span>Receita</span><b id="income">0</b></div>
-    <div class="chip"><span>Manpower</span><b id="manpower">0</b></div>
-    <div class="chip"><span>Estabilidade</span><b id="stability">0</b></div>
-    <div class="chip"><span>Prestígio</span><b id="prestige">0</b></div>
+<header class="topbar">
+  <div class="brand"><strong>ERYNDOR</strong><span>simulação geopolítica autônoma</span></div>
+  <div class="timebox"><span id="dateLabel">1 Jan 1444</span><small id="eraLabel">Ano 1444</small></div>
+  <div class="controls">
+    <button id="pauseBtn" class="control active">⏸</button>
+    <button class="speed active" data-speed="1">1×</button>
+    <button class="speed" data-speed="3">3×</button>
+    <button class="speed" data-speed="8">8×</button>
+    <button class="speed" data-speed="20">20×</button>
+    <button id="resetBtn" class="control danger">↻</button>
   </div>
-  <div class="clock"><b id="date">Primavera de 1444</b><small id="turn">Turno 1</small></div>
-  <button class="next" onclick="nextTurn()">ENCERRAR TURNO ›</button>
-</div>
-<div class="game">
-  <div class="card">
-    <div class="maphead"><div><b>Continente de Eryndor</b> <small>— clique numa província</small></div><small id="warState">Paz</small></div>
-    <div class="mapbox">
-      <svg viewBox="0 0 1000 650" aria-label="Mapa de Eryndor">
-        <path id="p0" class="prov" d="M90,120 L260,75 L345,145 L305,265 L145,275 L70,205 Z"/>
-        <path id="p1" class="prov" d="M345,145 L480,85 L565,145 L535,270 L305,265 Z"/>
-        <path id="p2" class="prov" d="M565,145 L720,100 L805,165 L780,285 L535,270 Z"/>
-        <path id="p3" class="prov" d="M145,275 L305,265 L330,390 L160,425 L75,350 Z"/>
-        <path id="p4" class="prov" d="M305,265 L535,270 L520,395 L330,390 Z"/>
-        <path id="p5" class="prov" d="M535,270 L780,285 L815,395 L650,435 L520,395 Z"/>
-        <path id="p6" class="prov" d="M160,425 L330,390 L420,505 L300,590 L125,545 Z"/>
-        <path id="p7" class="prov" d="M330,390 L520,395 L575,510 L420,505 Z"/>
-        <path id="p8" class="prov" d="M520,395 L650,435 L745,520 L575,510 Z"/>
-        <path id="p9" class="prov" d="M805,165 L925,205 L915,335 L815,395 L780,285 Z"/>
-        <path id="p10" class="prov" d="M815,395 L915,335 L955,455 L885,565 L745,520 Z"/>
-        <path id="p11" class="prov" d="M300,590 L420,505 L575,510 L745,520 L690,610 L480,625 Z"/>
-        <g id="labels"></g><g id="armies"></g>
-      </svg>
+</header>
+<main class="layout">
+  <section class="mapcard">
+    <div class="maptoolbar">
+      <div><strong>Continente de Eryndor</strong><span id="worldStatus">observador — a simulação roda sozinha</span></div>
+      <div class="layers"><button class="layer active" data-layer="political">Político</button><button class="layer" data-layer="economy">Economia</button><button class="layer" data-layer="relations">Relações</button></div>
     </div>
-    <div class="legend"><span><i class="dot" style="background:#c49b46"></i>Aurélia (você)</span><span><i class="dot" style="background:#5e82ae"></i>Nordmark</span><span><i class="dot" style="background:#57916a"></i>Verdânia</span><span><i class="dot" style="background:#a85b5f"></i>Drávia</span></div>
-  </div>
-  <aside class="card side">
-    <div class="tabs"><button class="tab active" onclick="tab('province',this)">PROVÍNCIA</button><button class="tab" onclick="tab('realm',this)">REINO</button><button class="tab" onclick="tab('diplo',this)">DIPLOMACIA</button><button class="tab" onclick="tab('chronicle',this)">CRÔNICA</button></div>
-    <div id="province" class="pane active"></div>
-    <div id="realm" class="pane"></div>
-    <div id="diplo" class="pane"></div>
-    <div id="chronicle" class="pane"></div>
+    <div class="canvaswrap">
+      <canvas id="world" width="1200" height="760"></canvas>
+      <div id="tooltip" class="tooltip"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </section>
+  <aside class="sidebar">
+    <section class="panel summary"><div class="panelhead"><strong>Visão do mundo</strong><span id="simState">RODANDO</span></div><div class="kpis"><div><span>Reinos</span><b id="kpiRealms">0</b></div><div><span>Guerras</span><b id="kpiWars">0</b></div><div><span>Rotas</span><b id="kpiTrade">0</b></div><div><span>Batalhas</span><b id="kpiBattles">0</b></div></div></section>
+    <section class="panel tabsPanel">
+      <div class="tabs"><button class="tab active" data-tab="chronicle">Crônica</button><button class="tab" data-tab="realms">Reinos</button><button class="tab" data-tab="diplomacy">Diplomacia</button><button class="tab" data-tab="selected">Inspeção</button></div>
+      <div id="chronicle" class="tabpane active"><div class="feed" id="feed"></div></div>
+      <div id="realms" class="tabpane"><div id="realmList"></div></div>
+      <div id="diplomacy" class="tabpane"><div id="diploMatrix"></div></div>
+      <div id="selected" class="tabpane"><div id="selectedInfo" class="empty">Clique em um reino ou província no mapa.</div></div>
+    </section>
+    <section class="panel tickerPanel"><div class="panelhead"><strong>Mercado continental</strong><span>fluxo em tempo real</span></div><div class="market" id="market"></div></section>
   </aside>
-</div>
-<div class="modal" id="modal"><div class="dialog"><h2 id="modalTitle"></h2><p id="modalText"></p><button onclick="closeModal()">Continuar</button></div></div>
-<script>
-const nations=[
- {id:0,name:'Reino de Aurélia',short:'Aurélia',color:'#c49b46',gold:220,manpower:78,stability:72,prestige:35,tech:1,relation:[100,10,25,-20],war:[]},
- {id:1,name:'Liga de Nordmark',short:'Nordmark',color:'#5e82ae',gold:185,manpower:66,stability:68,prestige:28,tech:1,relation:[10,100,-5,15],war:[]},
- {id:2,name:'Coroa de Verdânia',short:'Verdânia',color:'#57916a',gold:205,manpower:70,stability:76,prestige:31,tech:1,relation:[25,-5,100,-10],war:[]},
- {id:3,name:'Império de Drávia',short:'Drávia',color:'#a85b5f',gold:250,manpower:90,stability:63,prestige:42,tech:1,relation:[-20,15,-10,100],war:[]}
-];
-const P=[
- ['Solária',0,7,12,3,5,188,177],['Valecoroa',0,8,10,4,6,430,178],['Altomonte',1,6,13,5,7,660,190],['Campos Dourados',0,9,9,2,4,205,337],['Ribeira',0,7,11,3,5,425,330],['Bosque Velho',2,6,10,4,5,650,342],['Costa de Âmbar',2,8,12,2,6,265,485],['Passo Cinzento',2,5,8,6,4,455,455],['Lago Verde',3,7,10,4,5,625,475],['Fronteira Fria',1,5,8,6,5,855,270],['Dravograd',3,9,14,5,7,855,455],['Planícies do Sul',3,8,12,3,6,505,570]
-].map((x,i)=>({id:i,name:x[0],owner:x[1],dev:x[2],pop:x[3],fort:x[4],army:x[5],x:x[6],y:x[7],unrest:0}));
-const adj=[[1,3],[0,2,4],[1,5,9],[0,4,6],[1,3,5,7],[2,4,8,9],[3,7,11],[4,6,8,11],[5,7,10,11],[2,5,10],[8,9,11],[6,7,8,10]];
-let state={turn:1,season:0,year:1444,selected:0,logs:[],trade:0,saved:false};
-const seasons=['Primavera','Verão','Outono','Inverno'];
-function money(n){return Math.round(n)+' ¤'}
-function log(t){state.logs.unshift({turn:state.turn,text:t});state.logs=state.logs.slice(0,80)}
-function incomeOf(n){return P.filter(p=>p.owner===n).reduce((s,p)=>s+p.dev*2,0)+ (n===0?state.trade:0)-P.filter(p=>p.owner===n).reduce((s,p)=>s+p.army,0)}
-function owned(n){return P.filter(p=>p.owner===n)}
-function render(){renderMap();renderTop();renderProvince();renderRealm();renderDiplo();renderLog()}
-function renderTop(){let n=nations[0];document.getElementById('gold').textContent=money(n.gold);document.getElementById('income').textContent=(incomeOf(0)>=0?'+':'')+money(incomeOf(0));document.getElementById('manpower').textContent=Math.round(n.manpower)+'k';document.getElementById('stability').textContent=Math.round(n.stability)+'%';document.getElementById('prestige').textContent=Math.round(n.prestige);document.getElementById('date').textContent=seasons[state.season]+' de '+state.year;document.getElementById('turn').textContent='Turno '+state.turn;document.getElementById('warState').textContent=n.war.length?'Em guerra com '+n.war.map(i=>nations[i].short).join(', '):'Paz'}
-function renderMap(){P.forEach(p=>{let el=document.getElementById('p'+p.id);el.setAttribute('fill',nations[p.owner].color);el.classList.toggle('sel',p.id===state.selected);el.classList.toggle('enemy',p.owner!==0&&nations[0].war.includes(p.owner));el.onclick=()=>{state.selected=p.id;render()}});document.getElementById('labels').innerHTML=P.map(p=>`<text x="${p.x}" y="${p.y}" class="lbl">${p.name}</text><text x="${p.x}" y="${p.y+17}" class="sub">DEV ${p.dev} · FORT ${p.fort}</text>`).join('');document.getElementById('armies').innerHTML=P.filter(p=>p.army>0).map(p=>`<g class="army"><circle cx="${p.x+55}" cy="${p.y-22}" r="17"></circle><text x="${p.x+55}" y="${p.y-22}">${p.army}</text></g>`).join('')}
-function renderProvince(){let p=P[state.selected],n=nations[p.owner],ours=p.owner===0,neighbors=adj[p.id].map(i=>P[i]);let canAttack=!ours&&neighbors.some(q=>q.owner===0&&nations[0].war.includes(p.owner));document.getElementById('province').innerHTML=`<h2>${p.name}</h2><div class="owner"><i style="background:${n.color}"></i>${n.name}</div><div class="grid"><div class="stat"><span>Desenvolvimento</span><b>${p.dev}</b></div><div class="stat"><span>População</span><b>${p.pop}0k</b></div><div class="stat"><span>Exército</span><b>${p.army}k</b></div><div class="stat"><span>Fortaleza</span><b>Nv. ${p.fort}</b></div><div class="stat"><span>Agitação</span><b>${p.unrest}%</b></div><div class="stat"><span>Renda base</span><b>${money(p.dev*2)}</b></div></div><div class="section"><h3>Ações provinciais</h3><div class="btns">${ours?`<button class="btn" onclick="develop(${p.id})"><strong>Desenvolver</strong><small>40 ¤ · +1 dev</small></button><button class="btn" onclick="recruit(${p.id})"><strong>Recrutar</strong><small>25 ¤ · +3k</small></button><button class="btn" onclick="fortify(${p.id})"><strong>Fortificar</strong><small>35 ¤ · +1 fort</small></button><button class="btn" onclick="pacify(${p.id})"><strong>Pacificar</strong><small>20 ¤ · -15 agitação</small></button>`:`<button class="btn red" ${canAttack?'':'disabled'} onclick="attack(${p.id})"><strong>Atacar</strong><small>${canAttack?'Invadir pela fronteira':'Declare guerra primeiro'}</small></button>`}</div></div><div class="section"><h3>Fronteiras</h3><div style="font-size:11px;color:var(--muted)">${neighbors.map(q=>q.name+' ('+nations[q.owner].short+')').join(' · ')}</div></div>`}
-function renderRealm(){let n=nations[0];document.getElementById('realm').innerHTML=`<h2>${n.name}</h2><div class="owner"><i style="background:${n.color}"></i>Casa Solar</div><div class="notice">Objetivo: controlar 7 das 12 províncias ou atingir 100 de prestígio.</div><div class="grid"><div class="stat"><span>Províncias</span><b>${owned(0).length}/12</b></div><div class="stat"><span>Tecnologia</span><b>Nv. ${n.tech}</b></div><div class="stat"><span>Força militar</span><b>${owned(0).reduce((s,p)=>s+p.army,0)}k</b></div><div class="stat"><span>Comércio</span><b>+${money(state.trade)}</b></div></div><div class="section"><h3>Políticas</h3><div class="btns"><button class="btn" onclick="research()"><strong>Pesquisa estatal</strong><small>80 ¤ · +1 tecnologia</small></button><button class="btn" onclick="trade()"><strong>Expandir comércio</strong><small>55 ¤ · +5 renda</small></button><button class="btn" onclick="festival()"><strong>Festival real</strong><small>45 ¤ · +8 estabilidade</small></button><button class="btn" onclick="saveGame()"><strong>Salvar jogo</strong><small>neste navegador</small></button><button class="btn" onclick="loadGame()"><strong>Carregar jogo</strong><small>último save</small></button><button class="btn red" onclick="resetGame()"><strong>Novo jogo</strong><small>apaga o progresso</small></button></div></div>`}
-function renderDiplo(){document.getElementById('diplo').innerHTML=`<h2>Diplomacia</h2><div class="owner">Relações exteriores de Aurélia</div><div class="section">${nations.slice(1).map(n=>{let war=nations[0].war.includes(n.id),r=nations[0].relation[n.id];return `<div class="nation"><div class="row"><b><i class="dot" style="background:${n.color}"></i>${n.short}</b><span>${r>0?'+':''}${r}</span></div><small>${war?'GUERRA':'Paz'} · Prestígio ${Math.round(n.prestige)} · ${owned(n.id).length} províncias</small><div class="bar"><i style="width:${Math.max(2,Math.min(100,r+50))}%"></i></div><div class="btns" style="margin-top:8px"><button class="btn" onclick="improve(${n.id})"><strong>Melhorar relações</strong><small>20 ¤ · +15</small></button><button class="btn ${war?'':'red'}" onclick="${war?'peace':'declareWar'}(${n.id})"><strong>${war?'Propor paz':'Declarar guerra'}</strong><small>${war?'custa prestígio':'-10 estabilidade'}</small></button></div></div>`}).join('')}</div>`}
-function renderLog(){document.getElementById('chronicle').innerHTML=`<h2>Crônica Real</h2><div class="owner">Acontecimentos do reinado</div><div class="section"><div class="log">${state.logs.length?state.logs.map(x=>`<div><b>T${x.turn}</b> ${x.text}</div>`).join(''):'<div>Nenhum acontecimento ainda.</div>'}</div></div>`}
-function tab(id,el){document.querySelectorAll('.pane').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');el.classList.add('active')}
-function spend(v){if(nations[0].gold<v){popup('Tesouro insuficiente','A Coroa não possui ouro suficiente para esta ação.');return false}nations[0].gold-=v;return true}
-function develop(i){if(spend(40)){P[i].dev++;P[i].pop++;log('Investimentos elevaram o desenvolvimento de '+P[i].name+'.');render()}}
-function recruit(i){if(spend(25)&&nations[0].manpower>=3){nations[0].manpower-=3;P[i].army+=3;log('Novos regimentos foram recrutados em '+P[i].name+'.');render()}}
-function fortify(i){if(spend(35)){P[i].fort++;log('As defesas de '+P[i].name+' foram ampliadas.');render()}}
-function pacify(i){if(spend(20)){P[i].unrest=Math.max(0,P[i].unrest-15);nations[0].stability=Math.min(100,nations[0].stability+2);render()}}
-function research(){if(spend(80)){nations[0].tech++;nations[0].prestige+=5;log('A Coroa financiou uma nova geração de técnicas militares e administrativas.');render()}}
-function trade(){if(spend(55)){state.trade+=5;log('Mercadores aurelinos abriram novas rotas comerciais.');render()}}
-function festival(){if(spend(45)){nations[0].stability=Math.min(100,nations[0].stability+8);log('Um grande festival elevou o ânimo do reino.');render()}}
-function improve(id){if(spend(20)){nations[0].relation[id]=Math.min(100,nations[0].relation[id]+15);nations[id].relation[0]=nations[0].relation[id];render()}}
-function declareWar(id){if(nations[0].war.includes(id))return;nations[0].war.push(id);nations[id].war.push(0);nations[0].stability=Math.max(0,nations[0].stability-10);nations[0].relation[id]=-100;log('Aurélia declarou guerra a '+nations[id].short+'.');popup('A guerra começa','Os sinos de mobilização ecoam pelo reino. Províncias inimigas adjacentes às suas agora podem ser atacadas.');render()}
-function peace(id){if(!nations[0].war.includes(id))return;nations[0].war=nations[0].war.filter(x=>x!==id);nations[id].war=nations[id].war.filter(x=>x!==0);nations[0].prestige=Math.max(0,nations[0].prestige-3);nations[0].relation[id]=-35;log('Foi assinada paz com '+nations[id].short+'.');render()}
-function attack(target){let t=P[target],sources=adj[target].map(i=>P[i]).filter(p=>p.owner===0&&p.army>0);if(!sources.length)return;let s=sources.sort((a,b)=>b.army-a.army)[0];let atk=s.army*(1+nations[0].tech*.12)*(0.75+Math.random()*.5);let def=t.army*(1+nations[t.owner].tech*.12)+t.fort*2.4;let enemy=t.owner;if(atk>def){let loss=Math.max(1,Math.round(def/(3+nations[0].tech)));s.army=Math.max(1,s.army-loss);t.owner=0;t.army=Math.max(1,Math.round(s.army*.35));s.army=Math.max(1,s.army-t.army);t.unrest=35;nations[0].prestige+=6;nations[enemy].prestige-=3;log('Vitória em '+t.name+'! A província foi ocupada por Aurélia.');popup('Vitória em '+t.name,'As forças inimigas foram derrotadas e a bandeira de Aurélia foi hasteada sobre a província.')}else{let loss=Math.max(2,Math.round(s.army*.35));s.army=Math.max(0,s.army-loss);t.army=Math.max(1,t.army-Math.round(loss*.4));nations[0].prestige-=2;log('O ataque a '+t.name+' fracassou. Perdemos '+loss+'k soldados.');popup('Derrota','As fortificações e tropas inimigas repeliram o ataque a '+t.name+'.')}render();checkVictory()}
-function aiTurn(){for(let n=1;n<nations.length;n++){let nat=nations[n];nat.gold+=incomeOf(n);nat.manpower=Math.min(120,nat.manpower+4);let ps=owned(n);if(ps.length&&nat.gold>=25&&Math.random()<.55){let p=ps[Math.floor(Math.random()*ps.length)];p.army+=2;nat.gold-=18}if(Math.random()<.12&&nat.relation[0]<-30&&!nat.war.includes(0)){nat.war.push(0);nations[0].war.push(n);log(nat.short+' declarou guerra a Aurélia!')}if(nat.war.includes(0)){let targets=P.filter(p=>p.owner===0&&adj[p.id].some(i=>P[i].owner===n));if(targets.length&&Math.random()<.55){let t=targets[Math.floor(Math.random()*targets.length)],src=adj[t.id].map(i=>P[i]).filter(p=>p.owner===n).sort((a,b)=>b.army-a.army)[0];if(src&&src.army>t.army+t.fort){let old=t.name;t.owner=n;t.army=Math.max(1,Math.round(src.army*.3));src.army=Math.max(1,src.army-t.army);t.unrest=25;log(nat.short+' tomou '+old+' de Aurélia.')}}}}}
-function randomEvent(){let r=Math.random();if(r<.12){nations[0].gold+=45;log('Uma feira internacional rendeu 45 ¤ ao tesouro.')}else if(r<.22){nations[0].stability=Math.max(0,nations[0].stability-6);log('Más colheitas reduziram a estabilidade em 6.')}else if(r<.30){nations[0].manpower+=8;log('Um censo revelou 8k novos recrutas disponíveis.')}else if(r<.36){nations[0].prestige+=5;log('Artistas da corte elevaram o prestígio de Aurélia.')}}
-function nextTurn(){let n=nations[0];n.gold+=incomeOf(0);n.manpower=Math.min(120,n.manpower+5+owned(0).length);owned(0).forEach(p=>{p.unrest=Math.max(0,p.unrest-3);if(p.unrest>25&&Math.random()<.12){p.army=Math.max(0,p.army-1);log('Distúrbios em '+p.name+' desgastaram a guarnição.')}});aiTurn();randomEvent();state.turn++;state.season=(state.season+1)%4;if(state.season===0)state.year++;render();checkVictory()}
-function checkVictory(){if(owned(0).length>=7||nations[0].prestige>=100)popup('Vitória de Aurélia','Seu reino tornou-se a potência dominante de Eryndor. Você pode continuar jogando e conquistar o restante do continente.');if(owned(0).length===0)popup('Fim do reino','Aurélia perdeu todas as suas províncias. Inicie um novo jogo para tentar novamente.')}
-function popup(t,m){document.getElementById('modalTitle').textContent=t;document.getElementById('modalText').textContent=m;document.getElementById('modal').classList.add('show')}
-function closeModal(){document.getElementById('modal').classList.remove('show')}
-function saveGame(){localStorage.setItem('crowns-frontiers',JSON.stringify({state,nations,P}));popup('Jogo salvo','Seu progresso foi gravado localmente neste navegador.')}
-function loadGame(){let s=localStorage.getItem('crowns-frontiers');if(!s)return popup('Nenhum save','Ainda não existe um jogo salvo neste navegador.');let d=JSON.parse(s);state=d.state;d.nations.forEach((x,i)=>Object.assign(nations[i],x));d.P.forEach((x,i)=>Object.assign(P[i],x));render();popup('Jogo carregado','O último estado salvo foi restaurado.')}
-function resetGame(){localStorage.removeItem('crowns-frontiers');location.reload()}
-log('O ano é 1444. Aurélia observa seus vizinhos enquanto uma nova era começa.');render();
-</script>
+</main>
+<footer class="footer">Simulação procedural. Nenhum reino é controlado pelo jogador; pause, acelere e observe.</footer>
+<script src="game.js"></script>
 </body>
 </html>
