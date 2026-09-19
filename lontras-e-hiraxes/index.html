@@ -6,211 +6,224 @@
 <meta name="theme-color" content="#ffd8e8">
 <title>Te awawa meu amor 💗</title>
 <style>
-:root{
-  --pink:#ff79ac;--pink2:#ffc0d8;--cream:#fffaf5;--brown:#5c414b;
-  --sky1:#bfe9ff;--sky2:#eefaff;--grass1:#d9efb1;--grass2:#a9d77f;
-}
-*{box-sizing:border-box}
-html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--brown);background:linear-gradient(#ffe1ee,#fff8dc);overflow:hidden}
+:root{--pink:#ff6fa7;--pink2:#ffc5db;--cream:#fffaf6;--brown:#5d404b;--glass:#fffdf8e8}
+*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(#ffe1ee,#fff6d7);color:var(--brown);overflow:hidden}
 body{display:grid;place-items:center}
-#app{position:relative;width:min(100vw,780px);height:100dvh;max-height:980px;overflow:hidden;background:linear-gradient(var(--sky1) 0 55%,var(--sky2) 55% 58%,var(--grass1) 58%,var(--grass2) 100%);box-shadow:0 0 60px #0002}
-canvas{width:100%;height:100%;display:block;touch-action:none}
+#app{position:relative;width:min(100vw,800px);height:100dvh;max-height:980px;overflow:hidden;background:linear-gradient(#bfeaff 0 55%,#effbff 55% 58%,#d9efb3 58%,#abd47f 100%);box-shadow:0 0 60px #0002}
 .hidden{display:none!important}
+#field{position:absolute;inset:0;overflow:hidden;touch-action:none}
+.skybubble{position:absolute;border-radius:50%;background:#fff8;filter:blur(.2px);pointer-events:none}
+.river{position:absolute;left:-10%;right:-10%;bottom:-25px;height:115px;border-radius:50%;background:linear-gradient(#79c8e8aa,#4aa9d8aa);box-shadow:inset 0 7px 20px #fff4}
+.hill{position:absolute;bottom:72px;width:180px;height:90px;background:#86c668;border-radius:60% 60% 0 0;opacity:.95}
+.h1{left:-25px}.h2{right:-35px;width:230px;background:#94cf73}
+.lily{position:absolute;width:45px;height:20px;border-radius:50%;background:#6bb05d;bottom:25px;opacity:.85;transform:rotate(-8deg)}
 
-.hud{position:absolute;top:max(10px,env(safe-area-inset-top));left:12px;right:12px;z-index:4;display:flex;justify-content:space-between;gap:10px;pointer-events:none}
-.pill,.message{background:#fffdf8e9;border:2px solid #fff;backdrop-filter:blur(8px);box-shadow:0 8px 24px #6b405022;font-weight:900}
-.pill{border-radius:999px;padding:9px 14px}
-.message{position:absolute;left:50%;top:75px;transform:translateX(-50%);z-index:4;border-radius:999px;padding:8px 14px;text-align:center;max-width:92%;white-space:nowrap}
+.hud{position:absolute;z-index:10;top:max(10px,env(safe-area-inset-top));left:10px;right:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;pointer-events:none}
+.pill{background:var(--glass);border:2px solid #fff;border-radius:999px;padding:8px 9px;text-align:center;font-weight:900;font-size:13px;box-shadow:0 8px 24px #6b405022;backdrop-filter:blur(9px)}
+.progressWrap{position:absolute;z-index:10;left:16px;right:16px;top:58px;height:13px;border-radius:999px;background:#ffffffb8;border:2px solid #fff;overflow:hidden}
+#progress{height:100%;width:0;background:linear-gradient(90deg,#ff8db7,#ff5c9a,#ffb84f);transition:width .25s}
+#toast{position:absolute;z-index:12;left:50%;top:82px;transform:translateX(-50%) translateY(-8px);opacity:0;transition:.22s;background:#fffdf8f2;border:2px solid #fff;border-radius:999px;padding:9px 15px;font-weight:900;box-shadow:0 9px 28px #7a44562a;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-.controls{position:absolute;left:0;right:0;bottom:max(12px,env(safe-area-inset-bottom));z-index:4;display:flex;justify-content:space-between;padding:0 16px;pointer-events:none}
-.ctrl{pointer-events:auto;width:78px;height:78px;border:0;border-radius:24px;background:#fffdf8ed;color:var(--brown);box-shadow:0 8px 22px #0002;font-size:32px;font-weight:900;touch-action:none}
-.ctrl:active{transform:scale(.95)}
+.player{position:absolute;z-index:6;width:76px;height:76px;border-radius:50%;overflow:hidden;border:5px solid #fff;box-shadow:0 10px 25px #4a627b44,0 0 0 5px #ff9fc466;bottom:83px;left:50%;transform:translateX(-50%);transition:box-shadow .2s}
+.player img{width:100%;height:100%;object-fit:cover}
+.player.awawa{box-shadow:0 0 0 8px #ff7eaf88,0 0 35px 14px #ff93bd99;animation:pulse .55s infinite alternate}
+@keyframes pulse{to{transform:translateX(-50%) scale(1.08)}}
 
-.screen{position:absolute;inset:0;z-index:7;display:grid;place-items:center;padding:18px;background:linear-gradient(#ffe8f1ef,#fff8dfef)}
-.card{width:min(94%,590px);max-height:94dvh;overflow:auto;background:#fffdf9f9;border:3px solid #fff;border-radius:30px;padding:22px 18px;text-align:center;box-shadow:0 22px 60px #76435e30}
-h1{margin:0;line-height:1;font-size:clamp(30px,7vw,50px);color:#d45f8f;text-shadow:0 2px #fff}
-.subtitle{margin:10px 0 4px;font-size:clamp(18px,4.4vw,26px);font-weight:900;color:#7d5361}
-p{margin:10px 0;line-height:1.4}
+.entity{position:absolute;z-index:5;display:grid;place-items:center;will-change:transform;font-size:34px;filter:drop-shadow(0 5px 5px #0002)}
+.entity.hyrax{width:82px;height:82px;border-radius:50%;overflow:hidden;border:5px solid #fff;box-shadow:0 0 0 5px #ffd0dfaa,0 10px 24px #0002;background:#fff}
+.entity.hyrax img{width:100%;height:100%;object-fit:cover}
+.entity.hyrax::after{content:"HÍRAX!";position:absolute;bottom:-20px;background:#ff79a8;color:#fff;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:1000;letter-spacing:.5px}
+.entity.golden{font-size:42px;filter:drop-shadow(0 0 9px #ffd45c)}
+.entity.rock{filter:drop-shadow(0 4px 3px #0003)}
 
-.photo-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0 14px}
-.photo-card{background:linear-gradient(#fff,#fff8fc);border:2px solid #fff;border-radius:24px;padding:10px;box-shadow:0 10px 28px #6b405020}
-.photo-frame{aspect-ratio:1/1;border-radius:19px;overflow:hidden;background:linear-gradient(#ffe8f1,#fff8dd);box-shadow:inset 0 0 0 3px #ffffff99}
-.animal-photo{width:100%;height:100%;object-fit:cover;display:block}
-.photo-label{margin-top:8px;font-weight:900;font-size:15px;color:#7a4d5d}
+#buddies{position:absolute;z-index:9;left:12px;bottom:170px;display:flex;gap:7px;pointer-events:none}
+.buddy{width:45px;height:45px;border-radius:50%;overflow:hidden;border:3px solid #fff;box-shadow:0 5px 15px #0002;animation:pop .35s ease}
+.buddy img{width:100%;height:100%;object-fit:cover}
+@keyframes pop{0%{transform:scale(.2) rotate(-15deg)}80%{transform:scale(1.12)}100%{transform:scale(1)}}
 
-.pick{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}
-.pick button,.mainbtn{border:0;border-radius:20px;padding:14px 12px;font-size:18px;font-weight:900;color:#fff;background:linear-gradient(#ff9dc1,#ff79ac);box-shadow:0 6px 0 #d45b8c;cursor:pointer}
-.pick button:active,.mainbtn:active{transform:translateY(3px)}
-.tiny{margin-top:12px;font-size:13px;opacity:.78}
-.reward{margin:16px 0;background:#fff5fb;border:2px dashed #ffb0cf;border-radius:20px;padding:14px;font-weight:800}
+.controls{position:absolute;z-index:11;left:0;right:0;bottom:max(12px,env(safe-area-inset-bottom));display:flex;justify-content:space-between;padding:0 16px;pointer-events:none}
+.ctrl{pointer-events:auto;width:76px;height:76px;border:0;border-radius:24px;background:#fffdf8ec;color:var(--brown);font-size:31px;font-weight:900;box-shadow:0 8px 22px #0002;touch-action:none}
+.ctrl:active{transform:scale(.94)}
 
-.floaters{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
-.floaters span{position:absolute;bottom:-30px;animation:floatUp linear infinite;opacity:.75}
-.floaters span:nth-child(1){left:7%;animation-duration:9s}
-.floaters span:nth-child(2){left:23%;animation-duration:12s;animation-delay:2s}
-.floaters span:nth-child(3){left:46%;animation-duration:8s;animation-delay:1s}
-.floaters span:nth-child(4){left:65%;animation-duration:11s;animation-delay:3s}
-.floaters span:nth-child(5){left:84%;animation-duration:10s;animation-delay:1.5s}
-@keyframes floatUp{from{transform:translateY(0);opacity:0}15%{opacity:.85}to{transform:translateY(-110vh) scale(1.35);opacity:0}}
-
-.credits{font-size:11px;line-height:1.35;opacity:.62;margin-top:10px}
+.screen{position:absolute;inset:0;z-index:30;display:grid;place-items:center;padding:16px;background:linear-gradient(#ffe8f1f2,#fff8dff4)}
+.card{width:min(95%,600px);max-height:94dvh;overflow:auto;background:#fffdfaf9;border:3px solid #fff;border-radius:31px;padding:20px 17px;text-align:center;box-shadow:0 22px 60px #76435e30}
+h1{margin:0;font-size:clamp(31px,7vw,51px);line-height:1;color:#d65c8c;text-shadow:0 2px #fff}
+.subtitle{font-weight:950;font-size:clamp(17px,4.3vw,25px);margin:9px 0 5px;color:#76505e}
+p{line-height:1.4;margin:9px 0}
+.photoRow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:15px 0}
+.photoCard{background:#fff;border:2px solid #fff;border-radius:24px;padding:8px;box-shadow:0 10px 27px #6c405020}
+.photo{aspect-ratio:1/1;border-radius:18px;overflow:hidden;background:#ffe6ef}
+.photo img{width:100%;height:100%;object-fit:cover}
+.label{font-weight:900;margin-top:7px;font-size:14px}
+.mainbtn{width:100%;border:0;border-radius:20px;padding:14px 13px;background:linear-gradient(#ff9ec1,#ff6fa7);color:#fff;font-size:18px;font-weight:950;box-shadow:0 6px 0 #d45487;cursor:pointer}
+.mainbtn:active{transform:translateY(3px);box-shadow:0 3px 0 #d45487}
+.mission{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}
+.mini{background:#fff5fa;border-radius:17px;padding:10px;font-weight:800;font-size:14px}
+.reward{margin:14px 0;background:#fff5fb;border:2px dashed #ffafca;border-radius:20px;padding:13px;font-weight:850}
+.credits{font-size:10px;opacity:.58;margin-top:9px}
+.confetti{position:absolute;z-index:50;pointer-events:none;font-size:24px;animation:confetti 1.4s ease-out forwards}
+@keyframes confetti{to{transform:translate(var(--dx),var(--dy)) rotate(520deg);opacity:0}}
 </style>
 </head>
 <body>
 <div id="app">
-  <div class="floaters" aria-hidden="true">
-    <span>💗</span><span>💞</span><span>🌸</span><span>✨</span><span>💗</span>
+  <div id="field">
+    <div class="skybubble" style="width:120px;height:45px;left:6%;top:17%"></div>
+    <div class="skybubble" style="width:165px;height:55px;right:8%;top:28%"></div>
+    <div class="hill h1"></div><div class="hill h2"></div>
+    <div class="river"></div>
+    <div class="lily" style="left:15%"></div><div class="lily" style="left:48%;bottom:38px;transform:rotate(12deg)"></div><div class="lily" style="right:12%"></div>
+    <div id="entities"></div>
+    <div id="buddies"></div>
+    <div id="player" class="player hidden"><img alt="lontra" src="https://upload.wikimedia.org/wikipedia/commons/8/8c/North_American_river_otter.jpg"></div>
   </div>
-
-  <canvas id="game"></canvas>
 
   <div id="hud" class="hud hidden">
-    <div class="pill">💗 <span id="score">0</span>/18</div>
-    <div class="pill">✨ <span id="combo">x1</span></div>
+    <div class="pill">💗 <span id="love">0</span>/18</div>
+    <div class="pill">🪨💗 <span id="rescued">0</span>/3</div>
+    <div class="pill">✨ x<span id="combo">1</span></div>
   </div>
-
-  <div id="bubble" class="message hidden">te awawa meu amor 💗</div>
+  <div id="progressWrap" class="progressWrap hidden"><div id="progress"></div></div>
+  <div id="toast">te awawa meu amor 💗</div>
 
   <div id="controls" class="controls hidden">
-    <button class="ctrl" id="left" aria-label="Mover para a esquerda">←</button>
-    <button class="ctrl" id="right" aria-label="Mover para a direita">→</button>
+    <button class="ctrl" id="left">←</button>
+    <button class="ctrl" id="right">→</button>
   </div>
 
   <section id="start" class="screen">
     <div class="card">
       <h1>te awawa meu amor 💗</h1>
-      <div class="subtitle">Lontrinha do amor, com apoio moral do hírax 🦦</div>
-      <p>Uma missão importantíssima: juntar <b>18 corações</b> para deixar o mundinho mais fofinho. Pegue peixinhos e flores e tente não trombar nas pedrinhas.</p>
+      <div class="subtitle">Missão: Operação Awawa</div>
+      <p>Agora tem hírax de verdade no jogo. A lontrinha precisa juntar carinho e <b>resgatar 3 híraxes fofinhos</b> que vão aparecer pelo caminho.</p>
 
-      <div class="photo-row">
-        <div class="photo-card">
-          <div class="photo-frame">
-            <img class="animal-photo"
-              src="https://commons.wikimedia.org/wiki/Special:Redirect/file/North_American_river_otter.jpg"
-              alt="Lontra real">
-          </div>
-          <div class="photo-label">lontrinha 🦦💗</div>
+      <div class="photoRow">
+        <div class="photoCard">
+          <div class="photo"><img src="https://upload.wikimedia.org/wikipedia/commons/8/8c/North_American_river_otter.jpg" alt="lontra real"></div>
+          <div class="label">agente lontrinha 🦦</div>
         </div>
-
-        <div class="photo-card">
-          <div class="photo-frame">
-            <img class="animal-photo"
-              src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Hyrax.jpg"
-              alt="Hírax real">
-          </div>
-          <div class="photo-label">hírax fofinho 🪨💗</div>
+        <div class="photoCard">
+          <div class="photo"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Portrait_of_a_rock_hyrax.jpg/500px-Portrait_of_a_rock_hyrax.jpg" alt="hírax real"></div>
+          <div class="label">hírax fofinho 🪨💗</div>
         </div>
       </div>
 
-      <div class="pick">
-        <button data-animal="otter">começar o joguinho 💞</button>
+      <div class="mission">
+        <div class="mini">💗 Faça 18 pontos de carinho</div>
+        <div class="mini">🪨💗 Resgate 3 híraxes</div>
+        <div class="mini">🐟 Peixinho vale +2</div>
+        <div class="mini">✨ Combo 6 ativa AWAWA</div>
       </div>
-
-      <div class="tiny">No celular: use ← → · No computador: setas ou A/D</div>
-      <div class="credits">Fotos: Wikimedia Commons — lontra em CC0; hírax em domínio público.</div>
+      <button id="startBtn" class="mainbtn">começar a missão 🦦💞</button>
+      <div class="credits">Fotos reais: Wikimedia Commons. Lontra CC0; retrato de hírax CC0.</div>
     </div>
   </section>
 
   <section id="win" class="screen hidden">
     <div class="card">
       <h1>te awawa meu amor 💞</h1>
-      <div class="subtitle">Sua lontrinha conseguiu! 🦦</div>
-
-      <div class="photo-row">
-        <div class="photo-card">
-          <div class="photo-frame">
-            <img class="animal-photo"
-              src="https://commons.wikimedia.org/wiki/Special:Redirect/file/North_American_river_otter.jpg"
-              alt="Lontra real">
-          </div>
-        </div>
-        <div class="photo-card">
-          <div class="photo-frame">
-            <img class="animal-photo"
-              src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Hyrax.jpg"
-              alt="Hírax real">
-          </div>
-        </div>
+      <div class="subtitle">Operação Awawa concluída!</div>
+      <div class="photoRow">
+        <div class="photoCard"><div class="photo"><img src="https://upload.wikimedia.org/wikipedia/commons/8/8c/North_American_river_otter.jpg"></div><div class="label">lontrinha satisfeita 🦦</div></div>
+        <div class="photoCard"><div class="photo"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Portrait_of_a_rock_hyrax.jpg/500px-Portrait_of_a_rock_hyrax.jpg"></div><div class="label">híraxes resgatados 🪨💗</div></div>
       </div>
-
-      <p>A lontrinha juntou todos os corações, o hírax aprovou oficialmente a missão e agora só falta carinho, abraço e beijinho. 💗</p>
-      <div class="reward">prêmio desbloqueado:<br><b>1 abraço infinito + 1 beijo + 1 date fofinho</b> 💗</div>
-      <button id="again" class="mainbtn">jogar de novo</button>
+      <p>Todos os híraxes foram encontrados, os corações foram recolhidos e a comissão internacional das lontras declarou oficialmente que você é muito fofinha.</p>
+      <div class="reward">prêmio desbloqueado:<br><b>abraço infinito + beijinho + direito de escolher um date fofinho</b> 💗</div>
+      <button id="again" class="mainbtn">jogar de novo ✨</button>
     </div>
   </section>
 </div>
 
 <script>
-const canvas=document.getElementById('game'),ctx=canvas.getContext('2d'),app=document.getElementById('app');
-const hud=document.getElementById('hud'),controls=document.getElementById('controls'),bubble=document.getElementById('bubble');
-const scoreEl=document.getElementById('score'),comboEl=document.getElementById('combo'),startScreen=document.getElementById('start'),winScreen=document.getElementById('win');
-let W=0,H=0,dpr=1,running=false,score=0,combo=1,last=0,spawnTimer=0,msgTimer=0,items=[],particles=[];
-let input={left:false,right:false}; const player={x:0,y:0,w:64,h:64,vx:0};
-const msgs=['te awawa meu amor 💗','lontrinha coletando amor 🦦','hírax aprovou esse carinho 🪨💗','mais um coração pra você 💞','fofura em progresso ✨','missão: deixar seu dia mais bonitinho 🌸'];
+const OTTER='https://upload.wikimedia.org/wikipedia/commons/8/8c/North_American_river_otter.jpg';
+const HYRAX='https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Portrait_of_a_rock_hyrax.jpg/500px-Portrait_of_a_rock_hyrax.jpg';
+const app=document.getElementById('app'),field=document.getElementById('field'),entitiesEl=document.getElementById('entities'),playerEl=document.getElementById('player'),buddies=document.getElementById('buddies');
+const hud=document.getElementById('hud'),controls=document.getElementById('controls'),progressWrap=document.getElementById('progressWrap'),progress=document.getElementById('progress'),toast=document.getElementById('toast');
+const loveEl=document.getElementById('love'),rescuedEl=document.getElementById('rescued'),comboEl=document.getElementById('combo'),startScreen=document.getElementById('start'),winScreen=document.getElementById('win');
+let running=false,last=0,spawnT=0,nextHyrax=1.4,love=0,rescued=0,combo=1,awawa=0,px=0,vx=0,keys={l:false,r:false},ents=[],toastTimer=0,audio=null;
 
-function resize(){dpr=Math.min(devicePixelRatio||1,2);W=app.clientWidth;H=app.clientHeight;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
-addEventListener('resize',resize);resize();
-const rnd=(a,b)=>a+Math.random()*(b-a);
+function rnd(a,b){return a+Math.random()*(b-a)}
+function clamp(x,a,b){return Math.max(a,Math.min(b,x))}
+function size(){return {w:field.clientWidth,h:field.clientHeight}}
+function tone(freq=500,dur=.08,type='sine'){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(.04,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+dur);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+dur)}catch(e){}}
+function say(t){toast.textContent=t;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),1500)}
+function burst(x,y,chars=['💗','✨'],n=12){const r=app.getBoundingClientRect();for(let i=0;i<n;i++){const d=document.createElement('div');d.className='confetti';d.textContent=chars[i%chars.length];d.style.left=(x-r.left)+'px';d.style.top=(y-r.top)+'px';d.style.setProperty('--dx',rnd(-120,120)+'px');d.style.setProperty('--dy',rnd(-150,70)+'px');app.appendChild(d);setTimeout(()=>d.remove(),1500)}}
 
-function start(){score=0;combo=1;items=[];particles=[];player.x=W/2;player.y=H-126;player.vx=0;spawnTimer=0;msgTimer=1;last=performance.now();running=true;scoreEl.textContent='0';comboEl.textContent='x1';startScreen.classList.add('hidden');winScreen.classList.add('hidden');hud.classList.remove('hidden');controls.classList.remove('hidden');bubble.classList.remove('hidden');bubble.textContent='te awawa meu amor 💗';requestAnimationFrame(loop)}
-document.querySelector('[data-animal]').onclick=start;
-document.getElementById('again').onclick=()=>{winScreen.classList.add('hidden');startScreen.classList.remove('hidden')};
-
-function bind(id,key){const el=document.getElementById(id),on=e=>{e.preventDefault();input[key]=true},off=e=>{e.preventDefault();input[key]=false};['pointerdown','touchstart'].forEach(x=>el.addEventListener(x,on,{passive:false}));['pointerup','pointercancel','pointerleave','touchend'].forEach(x=>el.addEventListener(x,off,{passive:false}))}
-bind('left','left');bind('right','right');
-addEventListener('keydown',e=>{if(['ArrowLeft','a','A'].includes(e.key))input.left=true;if(['ArrowRight','d','D'].includes(e.key))input.right=true});
-addEventListener('keyup',e=>{if(['ArrowLeft','a','A'].includes(e.key))input.left=false;if(['ArrowRight','d','D'].includes(e.key))input.right=false});
-
-function spawn(){let r=Math.random(),type=r<.56?'heart':r<.72?'fish':r<.87?'flower':'rock';items.push({type,x:rnd(36,W-36),y:-28,size:type==='rock'?28:24,vy:rnd(120,190)+score*2,rot:rnd(-.5,.5)})}
-function burst(x,y,e,n=7){for(let i=0;i<n;i++)particles.push({x,y,vx:rnd(-90,90),vy:rnd(-170,-40),life:1,e})}
-function coll(a,b){return Math.abs(a.x-b.x)<(a.w/2+b.size*.75)&&Math.abs(a.y-b.y)<(a.h/2+b.size*.75)}
-function collect(it){
-  if(it.type==='heart'){score++;combo=Math.min(5,combo+1);burst(it.x,it.y,'💗',8)}
-  else if(it.type==='fish'){score+=Math.max(1,Math.floor(combo/2));burst(it.x,it.y,'🐟',6)}
-  else if(it.type==='flower'){score++;combo=Math.min(5,combo+1);burst(it.x,it.y,'🌸',6)}
-  else{combo=1;burst(it.x,it.y,'💫',6)}
-  score=Math.min(score,18);scoreEl.textContent=score;comboEl.textContent='x'+combo;
-  if(it.type!=='rock'&&Math.random()<.3)bubble.textContent=msgs[Math.floor(Math.random()*msgs.length)];
-  if(score>=18){running=false;setTimeout(win,350)}
+function reset(){
+  running=true;love=0;rescued=0;combo=1;awawa=0;spawnT=.25;nextHyrax=1.5;ents.forEach(e=>e.el.remove());ents=[];buddies.innerHTML='';
+  const s=size();px=s.w/2;vx=0;updatePlayer();
+  loveEl.textContent=0;rescuedEl.textContent=0;comboEl.textContent=1;progress.style.width='0%';
+  startScreen.classList.add('hidden');winScreen.classList.add('hidden');hud.classList.remove('hidden');controls.classList.remove('hidden');progressWrap.classList.remove('hidden');playerEl.classList.remove('hidden');
+  say('te awawa meu amor 💗');last=performance.now();tone(523,.1);requestAnimationFrame(loop)
 }
-function win(){hud.classList.add('hidden');controls.classList.add('hidden');bubble.classList.add('hidden');winScreen.classList.remove('hidden')}
+function finish(){
+  running=false;hud.classList.add('hidden');controls.classList.add('hidden');progressWrap.classList.add('hidden');playerEl.classList.add('hidden');
+  const r=app.getBoundingClientRect();for(let k=0;k<5;k++)setTimeout(()=>burst(r.left+r.width/2,r.top+r.height/2,['💗','💞','🌸','✨'],18),k*120);
+  setTimeout(()=>winScreen.classList.remove('hidden'),500);tone(784,.12);setTimeout(()=>tone(988,.14),120)
+}
+function updateHud(){
+  loveEl.textContent=love;rescuedEl.textContent=rescued;comboEl.textContent=combo;
+  const a=Math.min(1,love/18),b=Math.min(1,rescued/3);progress.style.width=((a*.58+b*.42)*100)+'%';
+  if(love>=18&&rescued>=3)finish()
+}
+function updatePlayer(){const s=size();px=clamp(px,42,s.w-42);playerEl.style.left=px+'px'}
 
-function cloud(x,y){ctx.beginPath();ctx.arc(x,y,24,0,7);ctx.arc(x+26,y-9,31,0,7);ctx.arc(x+57,y,22,0,7);ctx.fill()}
-function bg(t){
-  ctx.clearRect(0,0,W,H);
-  let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#bfe9ff');g.addColorStop(.55,'#eefaff');g.addColorStop(.56,'#dff1bd');g.addColorStop(1,'#a9d77f');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='#fffddd';for(let i=0;i<6;i++)cloud(((i*170+t*.009)%(W+220))-110,70+(i%3)*58);
-  ctx.fillStyle='#8ac56d';for(let x=-20;x<W+50;x+=40){ctx.beginPath();ctx.arc(x,H-84+Math.sin(x*.07)*8,30,0,7);ctx.fill()}
-  ctx.fillStyle='#72c2e666';ctx.beginPath();ctx.ellipse(W*.5,H-28,W*.62,52,0,0,7);ctx.fill()
+function make(type){
+  const s=size(),el=document.createElement('div');el.className='entity '+type;
+  let w=46,h=46;
+  if(type==='hyrax'){w=h=82;el.innerHTML='<img alt="hírax" src="'+HYRAX+'">'}
+  else if(type==='heart')el.textContent='💗';
+  else if(type==='fish')el.textContent='🐟';
+  else if(type==='flower')el.textContent='🌸';
+  else if(type==='golden'){el.textContent='💌';el.classList.add('golden')}
+  else{el.textContent='🪨';el.classList.add('rock')}
+  const x=rnd(30,s.w-30),y=-90,vy=type==='hyrax'?95:rnd(125,190)+love*1.3;
+  el.style.left=x+'px';el.style.top=y+'px';entitiesEl.appendChild(el);
+  ents.push({type,el,x,y,vy,w,h,rot:rnd(-.4,.4)})
 }
-function otter(x,y){
-  ctx.save();ctx.translate(x,y);
-  ctx.strokeStyle='#6f4736';ctx.lineWidth=10;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(18,18);ctx.quadraticCurveTo(48,30,38,50);ctx.stroke();
-  ctx.fillStyle='#6f4736';ctx.beginPath();ctx.ellipse(0,8,24,30,0,0,7);ctx.fill();
-  ctx.fillStyle='#8b6048';ctx.beginPath();ctx.arc(0,-10,23,0,7);ctx.fill();
-  ctx.fillStyle='#6f4736';ctx.beginPath();ctx.arc(-16,-18,8,0,7);ctx.arc(16,-18,8,0,7);ctx.fill();
-  ctx.fillStyle='#d9b79a';ctx.beginPath();ctx.ellipse(0,-4,14,11,0,0,7);ctx.fill();
-  ctx.fillStyle='#201819';ctx.beginPath();ctx.arc(-8,-12,2.6,0,7);ctx.arc(8,-12,2.6,0,7);ctx.arc(0,-5,3,0,7);ctx.fill();
-  ctx.fillStyle='#ffaabe88';ctx.beginPath();ctx.arc(-12,-3,4.5,0,7);ctx.arc(12,-3,4.5,0,7);ctx.fill();
-  ctx.restore()
+function spawnNormal(){
+  const r=Math.random();if(r<.48)make('heart');else if(r<.66)make('fish');else if(r<.78)make('flower');else if(r<.87)make('golden');else make('rock')
 }
-function drawItem(it){ctx.save();ctx.translate(it.x,it.y);ctx.rotate(it.rot);ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=(it.size*1.45)+'px system-ui';ctx.fillText(it.type==='heart'?'💗':it.type==='fish'?'🐟':it.type==='flower'?'🌸':'🪨',0,0);ctx.restore()}
+function rescueHyrax(e){
+  rescued++;love=Math.min(18,love+3);combo=Math.min(9,combo+2);
+  const b=document.createElement('div');b.className='buddy';b.innerHTML='<img src="'+HYRAX+'" alt="hírax resgatado">';buddies.appendChild(b);
+  const rr=e.el.getBoundingClientRect();burst(rr.left+rr.width/2,rr.top+rr.height/2,['🪨💗','✨','💗'],16);say('HÍRAX RESGATADO! awawa!!! 🪨💗');tone(880,.11);setTimeout(()=>tone(1100,.1),90);updateHud()
+}
+function collect(e){
+  const rr=e.el.getBoundingClientRect();
+  if(e.type==='hyrax'){rescueHyrax(e);return}
+  if(e.type==='rock'){combo=1;love=Math.max(0,love-1);say('ai! pedrinha 😭 combo zerado');tone(180,.12,'square');burst(rr.left+rr.width/2,rr.top+rr.height/2,['💫'],8)}
+  else{
+    let pts=e.type==='fish'?2:e.type==='golden'?3:1;if(awawa>0)pts*=2;love=Math.min(18,love+pts);combo=Math.min(9,combo+1);
+    const icon=e.type==='fish'?'🐟':e.type==='golden'?'💌':e.type==='flower'?'🌸':'💗';burst(rr.left+rr.width/2,rr.top+rr.height/2,[icon,'✨'],7);tone(e.type==='golden'?740:560+combo*30,.07);
+    if(e.type==='golden')say('cartinha secreta! +3 💌');
+    if(combo>=6&&awawa<=0){awawa=6;playerEl.classList.add('awawa');say('MODO AWAWA! pontos em dobro ✨💗');tone(1046,.12)}
+  }
+  updateHud()
+}
+function hit(a,b){return Math.abs(a.x-b.x)<(a.w+b.w)/2*.72&&Math.abs(a.y-b.y)<(a.h+b.h)/2*.72}
 
 function loop(now){
-  if(!running)return;
-  const dt=Math.min(.035,(now-last)/1000);last=now;spawnTimer-=dt;msgTimer-=dt;
-  if(spawnTimer<=0){spawn();spawnTimer=rnd(.38,.66)}
-  if(msgTimer<=0){bubble.textContent=msgs[Math.floor(Math.random()*msgs.length)];msgTimer=rnd(2.8,4.8)}
-  const accel=760,max=310;
-  if(input.left)player.vx-=accel*dt;if(input.right)player.vx+=accel*dt;if(!input.left&&!input.right)player.vx*=Math.pow(.86,dt*60);
-  player.vx=Math.max(-max,Math.min(max,player.vx));player.x+=player.vx*dt;player.x=Math.max(36,Math.min(W-36,player.x));player.y=H-126;
-  items.forEach(it=>{it.y+=it.vy*dt;it.rot+=dt*(it.type==='rock'?1.2:.35)});
-  for(let i=items.length-1;i>=0;i--){const it=items[i];if(coll(player,it)){collect(it);items.splice(i,1)}else if(it.y>H+50)items.splice(i,1)}
-  particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=280*dt;p.life-=dt*1.8});particles=particles.filter(p=>p.life>0);
-  bg(now);items.forEach(drawItem);otter(player.x,player.y);
-  particles.forEach(p=>{ctx.save();ctx.globalAlpha=Math.max(0,p.life);ctx.font='20px system-ui';ctx.fillText(p.e,p.x,p.y);ctx.restore()});
+  if(!running)return;const dt=Math.min(.035,(now-last)/1000);last=now;const s=size();
+  spawnT-=dt;nextHyrax-=dt;awawa=Math.max(0,awawa-dt);if(awawa<=0)playerEl.classList.remove('awawa');
+  if(spawnT<=0){spawnNormal();spawnT=rnd(.38,.63)}
+  if(nextHyrax<=0&&rescued<3){make('hyrax');nextHyrax=rnd(5.2,7.2)}
+  const accel=1050,max=400;if(keys.l)vx-=accel*dt;if(keys.r)vx+=accel*dt;if(!keys.l&&!keys.r)vx*=Math.pow(.82,dt*60);vx=clamp(vx,-max,max);px+=vx*dt;updatePlayer();
+  const pr={x:px,y:s.h-83-38,w:76,h:76};
+  for(let i=ents.length-1;i>=0;i--){
+    const e=ents[i];e.y+=e.vy*dt;e.rot+=dt*(e.type==='rock'?1.6:.35);e.el.style.transform='translate(-50%,-50%) rotate('+e.rot+'rad)';e.el.style.left=e.x+'px';e.el.style.top=e.y+'px';
+    if(hit(pr,{x:e.x,y:e.y,w:e.w,h:e.h})){collect(e);e.el.remove();ents.splice(i,1)}
+    else if(e.y>s.h+100){e.el.remove();ents.splice(i,1)}
+  }
   requestAnimationFrame(loop)
 }
+function bind(id,key){const b=document.getElementById(id);const on=e=>{e.preventDefault();keys[key]=true},off=e=>{e.preventDefault();keys[key]=false};['pointerdown','touchstart'].forEach(x=>b.addEventListener(x,on,{passive:false}));['pointerup','pointercancel','pointerleave','touchend'].forEach(x=>b.addEventListener(x,off,{passive:false}))}
+bind('left','l');bind('right','r');
+addEventListener('keydown',e=>{if(['ArrowLeft','a','A'].includes(e.key))keys.l=true;if(['ArrowRight','d','D'].includes(e.key))keys.r=true});
+addEventListener('keyup',e=>{if(['ArrowLeft','a','A'].includes(e.key))keys.l=false;if(['ArrowRight','d','D'].includes(e.key))keys.r=false});
+field.addEventListener('pointermove',e=>{if(!running||e.pointerType==='mouse'&&e.buttons===0)return;const r=field.getBoundingClientRect();px=clamp(e.clientX-r.left,42,r.width-42);vx=0;updatePlayer()});
+document.getElementById('startBtn').onclick=reset;document.getElementById('again').onclick=()=>{winScreen.classList.add('hidden');startScreen.classList.remove('hidden')};
 </script>
 </body>
 </html>
