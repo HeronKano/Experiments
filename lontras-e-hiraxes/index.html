@@ -3,32 +3,65 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#ffd7e8">
+<meta name="theme-color" content="#ffd8e8">
 <title>Te awawa meu amor 💗</title>
 <style>
-:root{--pink:#ff8fba;--pink2:#ffd4e4;--cream:#fffaf5;--brown:#5d414b;--sky:#cdeeff;--grass:#d8efb2}
-*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--brown);background:linear-gradient(#ffe0ee,#fff8dd);overflow:hidden}
-body{display:grid;place-items:center}#app{position:relative;width:min(100vw,780px);height:100dvh;max-height:980px;overflow:hidden;background:linear-gradient(var(--sky) 0 58%,var(--grass) 58% 100%);box-shadow:0 0 60px #0002}
+:root{
+  --pink:#ff79ac;--pink2:#ffc0d8;--cream:#fffaf5;--brown:#5c414b;
+  --sky1:#bfe9ff;--sky2:#eefaff;--grass1:#d9efb1;--grass2:#a9d77f;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--brown);background:linear-gradient(#ffe1ee,#fff8dc);overflow:hidden}
+body{display:grid;place-items:center}
+#app{position:relative;width:min(100vw,780px);height:100dvh;max-height:980px;overflow:hidden;background:linear-gradient(var(--sky1) 0 55%,var(--sky2) 55% 58%,var(--grass1) 58%,var(--grass2) 100%);box-shadow:0 0 60px #0002}
 canvas{width:100%;height:100%;display:block;touch-action:none}
 .hidden{display:none!important}
-.hud{position:absolute;top:max(10px,env(safe-area-inset-top));left:12px;right:12px;z-index:3;display:flex;justify-content:space-between;gap:10px;pointer-events:none}
-.pill,.message{background:#fffdf8e8;border:2px solid #fff;backdrop-filter:blur(8px);box-shadow:0 8px 22px #6b405020;font-weight:900}
+
+.hud{position:absolute;top:max(10px,env(safe-area-inset-top));left:12px;right:12px;z-index:4;display:flex;justify-content:space-between;gap:10px;pointer-events:none}
+.pill,.message{background:#fffdf8e9;border:2px solid #fff;backdrop-filter:blur(8px);box-shadow:0 8px 24px #6b405022;font-weight:900}
 .pill{border-radius:999px;padding:9px 14px}
-.message{position:absolute;left:50%;top:75px;transform:translateX(-50%);z-index:3;border-radius:999px;padding:8px 14px;text-align:center;max-width:92%;white-space:nowrap}
-.controls{position:absolute;left:0;right:0;bottom:max(12px,env(safe-area-inset-bottom));z-index:3;display:flex;justify-content:space-between;padding:0 16px;pointer-events:none}
-.ctrl{pointer-events:auto;width:78px;height:78px;border:0;border-radius:24px;background:#fffdf8e8;color:var(--brown);box-shadow:0 8px 22px #0002;font-size:32px;font-weight:900;touch-action:none}.ctrl:active{transform:scale(.95)}
-.screen{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:18px;background:linear-gradient(#ffe8f1ee,#fff8dfee)}
-.card{width:min(94%,580px);background:#fffdf9f7;border:3px solid #fff;border-radius:30px;padding:22px 18px;text-align:center;box-shadow:0 20px 55px #76435e2d}
-h1{margin:0;line-height:1;font-size:clamp(29px,7vw,48px);color:#d15f8e}.subtitle{margin:9px 0 4px;font-size:clamp(18px,4.2vw,25px);font-weight:900;color:#7d5361}p{margin:10px 0;line-height:1.38}
-.photo-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0 14px}.photo-card{background:#fff;border-radius:22px;padding:10px;box-shadow:0 8px 25px #6b405020}.photo-frame{aspect-ratio:1/1;border-radius:18px;display:grid;place-items:center;background:linear-gradient(#ffe8f1,#fff8dd);overflow:hidden}.animal-big{font-size:70px;filter:drop-shadow(0 8px 8px #0001)}.photo-label{margin-top:8px;font-weight:900}
-.pick{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.pick button,.mainbtn{border:0;border-radius:20px;padding:14px 12px;font-size:18px;font-weight:900;color:#fff;background:linear-gradient(#ff9dc1,#ff79ac);box-shadow:0 6px 0 #d45b8c;cursor:pointer}.pick button.alt{background:linear-gradient(#b6987f,#98806c);box-shadow:0 6px 0 #766252}.pick button:active,.mainbtn:active{transform:translateY(3px)}
-.tiny{margin-top:12px;font-size:13px;opacity:.78}.reward{margin:16px 0;background:#fff5fb;border:2px dashed #ffb0cf;border-radius:20px;padding:14px;font-weight:800}
-.floaters{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}.floaters span{position:absolute;bottom:-30px;animation:floatUp linear infinite;opacity:.75}.floaters span:nth-child(1){left:7%;animation-duration:9s}.floaters span:nth-child(2){left:23%;animation-duration:12s;animation-delay:2s}.floaters span:nth-child(3){left:46%;animation-duration:8s;animation-delay:1s}.floaters span:nth-child(4){left:65%;animation-duration:11s;animation-delay:3s}.floaters span:nth-child(5){left:84%;animation-duration:10s;animation-delay:1.5s}@keyframes floatUp{from{transform:translateY(0);opacity:0}15%{opacity:.8}to{transform:translateY(-110vh) scale(1.3);opacity:0}}
+.message{position:absolute;left:50%;top:75px;transform:translateX(-50%);z-index:4;border-radius:999px;padding:8px 14px;text-align:center;max-width:92%;white-space:nowrap}
+
+.controls{position:absolute;left:0;right:0;bottom:max(12px,env(safe-area-inset-bottom));z-index:4;display:flex;justify-content:space-between;padding:0 16px;pointer-events:none}
+.ctrl{pointer-events:auto;width:78px;height:78px;border:0;border-radius:24px;background:#fffdf8ed;color:var(--brown);box-shadow:0 8px 22px #0002;font-size:32px;font-weight:900;touch-action:none}
+.ctrl:active{transform:scale(.95)}
+
+.screen{position:absolute;inset:0;z-index:7;display:grid;place-items:center;padding:18px;background:linear-gradient(#ffe8f1ef,#fff8dfef)}
+.card{width:min(94%,590px);max-height:94dvh;overflow:auto;background:#fffdf9f9;border:3px solid #fff;border-radius:30px;padding:22px 18px;text-align:center;box-shadow:0 22px 60px #76435e30}
+h1{margin:0;line-height:1;font-size:clamp(30px,7vw,50px);color:#d45f8f;text-shadow:0 2px #fff}
+.subtitle{margin:10px 0 4px;font-size:clamp(18px,4.4vw,26px);font-weight:900;color:#7d5361}
+p{margin:10px 0;line-height:1.4}
+
+.photo-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0 14px}
+.photo-card{background:linear-gradient(#fff,#fff8fc);border:2px solid #fff;border-radius:24px;padding:10px;box-shadow:0 10px 28px #6b405020}
+.photo-frame{aspect-ratio:1/1;border-radius:19px;overflow:hidden;background:linear-gradient(#ffe8f1,#fff8dd);box-shadow:inset 0 0 0 3px #ffffff99}
+.animal-photo{width:100%;height:100%;object-fit:cover;display:block}
+.photo-label{margin-top:8px;font-weight:900;font-size:15px;color:#7a4d5d}
+
+.pick{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}
+.pick button,.mainbtn{border:0;border-radius:20px;padding:14px 12px;font-size:18px;font-weight:900;color:#fff;background:linear-gradient(#ff9dc1,#ff79ac);box-shadow:0 6px 0 #d45b8c;cursor:pointer}
+.pick button:active,.mainbtn:active{transform:translateY(3px)}
+.tiny{margin-top:12px;font-size:13px;opacity:.78}
+.reward{margin:16px 0;background:#fff5fb;border:2px dashed #ffb0cf;border-radius:20px;padding:14px;font-weight:800}
+
+.floaters{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+.floaters span{position:absolute;bottom:-30px;animation:floatUp linear infinite;opacity:.75}
+.floaters span:nth-child(1){left:7%;animation-duration:9s}
+.floaters span:nth-child(2){left:23%;animation-duration:12s;animation-delay:2s}
+.floaters span:nth-child(3){left:46%;animation-duration:8s;animation-delay:1s}
+.floaters span:nth-child(4){left:65%;animation-duration:11s;animation-delay:3s}
+.floaters span:nth-child(5){left:84%;animation-duration:10s;animation-delay:1.5s}
+@keyframes floatUp{from{transform:translateY(0);opacity:0}15%{opacity:.85}to{transform:translateY(-110vh) scale(1.35);opacity:0}}
+
+.credits{font-size:11px;line-height:1.35;opacity:.62;margin-top:10px}
 </style>
 </head>
 <body>
 <div id="app">
-  <div class="floaters"><span>💗</span><span>💞</span><span>🌸</span><span>✨</span><span>💗</span></div>
+  <div class="floaters" aria-hidden="true">
+    <span>💗</span><span>💞</span><span>🌸</span><span>✨</span><span>💗</span>
+  </div>
+
   <canvas id="game"></canvas>
 
   <div id="hud" class="hud hidden">
@@ -39,35 +72,68 @@ h1{margin:0;line-height:1;font-size:clamp(29px,7vw,48px);color:#d15f8e}.subtitle
   <div id="bubble" class="message hidden">te awawa meu amor 💗</div>
 
   <div id="controls" class="controls hidden">
-    <button class="ctrl" id="left">←</button>
-    <button class="ctrl" id="right">→</button>
+    <button class="ctrl" id="left" aria-label="Mover para a esquerda">←</button>
+    <button class="ctrl" id="right" aria-label="Mover para a direita">→</button>
   </div>
 
   <section id="start" class="screen">
     <div class="card">
       <h1>te awawa meu amor 💗</h1>
-      <div class="subtitle">Lontrinha do amor 🦦</div>
-      <p>Uma missão muito séria: juntar <b>18 corações</b> para encher o mundinho de carinho. Pegue peixinhos e flores, mas cuidado com as pedrinhas.</p>
+      <div class="subtitle">Lontrinha do amor, com apoio moral do hírax 🦦</div>
+      <p>Uma missão importantíssima: juntar <b>18 corações</b> para deixar o mundinho mais fofinho. Pegue peixinhos e flores e tente não trombar nas pedrinhas.</p>
 
-      <div class="photo-row" style="grid-template-columns:1fr;max-width:260px;margin-left:auto;margin-right:auto">
+      <div class="photo-row">
         <div class="photo-card">
-          <div class="photo-frame"><div class="animal-big">🦦</div></div>
-          <div class="photo-label">só lontrinha 🦦💗</div>
+          <div class="photo-frame">
+            <img class="animal-photo"
+              src="https://commons.wikimedia.org/wiki/Special:Redirect/file/North_American_river_otter.jpg"
+              alt="Lontra real">
+          </div>
+          <div class="photo-label">lontrinha 🦦💗</div>
+        </div>
+
+        <div class="photo-card">
+          <div class="photo-frame">
+            <img class="animal-photo"
+              src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Hyrax.jpg"
+              alt="Hírax real">
+          </div>
+          <div class="photo-label">hírax fofinho 🪨💗</div>
         </div>
       </div>
 
-      <div class="pick" style="grid-template-columns:1fr">
-        <button data-animal="otter">Jogar com a lontrinha 🦦</button>
+      <div class="pick">
+        <button data-animal="otter">começar o joguinho 💞</button>
       </div>
+
       <div class="tiny">No celular: use ← → · No computador: setas ou A/D</div>
+      <div class="credits">Fotos: Wikimedia Commons — lontra em CC0; hírax em domínio público.</div>
     </div>
   </section>
 
   <section id="win" class="screen hidden">
     <div class="card">
       <h1>te awawa meu amor 💞</h1>
-      <div id="winSubtitle" class="subtitle">Você venceu!</div>
-      <p id="winText"></p>
+      <div class="subtitle">Sua lontrinha conseguiu! 🦦</div>
+
+      <div class="photo-row">
+        <div class="photo-card">
+          <div class="photo-frame">
+            <img class="animal-photo"
+              src="https://commons.wikimedia.org/wiki/Special:Redirect/file/North_American_river_otter.jpg"
+              alt="Lontra real">
+          </div>
+        </div>
+        <div class="photo-card">
+          <div class="photo-frame">
+            <img class="animal-photo"
+              src="https://commons.wikimedia.org/wiki/Special:Redirect/file/Hyrax.jpg"
+              alt="Hírax real">
+          </div>
+        </div>
+      </div>
+
+      <p>A lontrinha juntou todos os corações, o hírax aprovou oficialmente a missão e agora só falta carinho, abraço e beijinho. 💗</p>
       <div class="reward">prêmio desbloqueado:<br><b>1 abraço infinito + 1 beijo + 1 date fofinho</b> 💗</div>
       <button id="again" class="mainbtn">jogar de novo</button>
     </div>
@@ -77,33 +143,74 @@ h1{margin:0;line-height:1;font-size:clamp(29px,7vw,48px);color:#d15f8e}.subtitle
 <script>
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d'),app=document.getElementById('app');
 const hud=document.getElementById('hud'),controls=document.getElementById('controls'),bubble=document.getElementById('bubble');
-const scoreEl=document.getElementById('score'),comboEl=document.getElementById('combo');
-const startScreen=document.getElementById('start'),winScreen=document.getElementById('win'),winSubtitle=document.getElementById('winSubtitle'),winText=document.getElementById('winText');
-let W=0,H=0,dpr=1,running=false,animal='otter',score=0,combo=1,last=0,spawnTimer=0,msgTimer=0,items=[],particles=[];
+const scoreEl=document.getElementById('score'),comboEl=document.getElementById('combo'),startScreen=document.getElementById('start'),winScreen=document.getElementById('win');
+let W=0,H=0,dpr=1,running=false,score=0,combo=1,last=0,spawnTimer=0,msgTimer=0,items=[],particles=[];
 let input={left:false,right:false}; const player={x:0,y:0,w:64,h:64,vx:0};
-const msgs=['te awawa meu amor 💗','você é fofinha demais ✨','lontrinha mode ativado 🦦','hírax fofinho detected 🐹','coleta de carinho em andamento 💞','mais um coração pra você 🌸'];
-function resize(){dpr=Math.min(devicePixelRatio||1,2);W=app.clientWidth;H=app.clientHeight;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
+const msgs=['te awawa meu amor 💗','lontrinha coletando amor 🦦','hírax aprovou esse carinho 🪨💗','mais um coração pra você 💞','fofura em progresso ✨','missão: deixar seu dia mais bonitinho 🌸'];
+
+function resize(){dpr=Math.min(devicePixelRatio||1,2);W=app.clientWidth;H=app.clientHeight;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
+addEventListener('resize',resize);resize();
 const rnd=(a,b)=>a+Math.random()*(b-a);
 
-function start(kind){animal=kind;score=0;combo=1;items=[];particles=[];player.x=W/2;player.y=H-126;player.vx=0;spawnTimer=0;msgTimer=1;last=performance.now();running=true;scoreEl.textContent='0';comboEl.textContent='x1';startScreen.classList.add('hidden');winScreen.classList.add('hidden');hud.classList.remove('hidden');controls.classList.remove('hidden');bubble.classList.remove('hidden');bubble.textContent='te awawa meu amor 💗';requestAnimationFrame(loop)}
-document.querySelectorAll('[data-animal]').forEach(b=>b.onclick=()=>start(b.dataset.animal));document.getElementById('again').onclick=()=>{winScreen.classList.add('hidden');startScreen.classList.remove('hidden')};
+function start(){score=0;combo=1;items=[];particles=[];player.x=W/2;player.y=H-126;player.vx=0;spawnTimer=0;msgTimer=1;last=performance.now();running=true;scoreEl.textContent='0';comboEl.textContent='x1';startScreen.classList.add('hidden');winScreen.classList.add('hidden');hud.classList.remove('hidden');controls.classList.remove('hidden');bubble.classList.remove('hidden');bubble.textContent='te awawa meu amor 💗';requestAnimationFrame(loop)}
+document.querySelector('[data-animal]').onclick=start;
+document.getElementById('again').onclick=()=>{winScreen.classList.add('hidden');startScreen.classList.remove('hidden')};
 
-function bind(id,key){const el=document.getElementById(id),on=e=>{e.preventDefault();input[key]=true},off=e=>{e.preventDefault();input[key]=false};['pointerdown','touchstart'].forEach(x=>el.addEventListener(x,on,{passive:false}));['pointerup','pointercancel','pointerleave','touchend'].forEach(x=>el.addEventListener(x,off,{passive:false}))}bind('left','left');bind('right','right');
-addEventListener('keydown',e=>{if(['ArrowLeft','a','A'].includes(e.key))input.left=true;if(['ArrowRight','d','D'].includes(e.key))input.right=true});addEventListener('keyup',e=>{if(['ArrowLeft','a','A'].includes(e.key))input.left=false;if(['ArrowRight','d','D'].includes(e.key))input.right=false});
+function bind(id,key){const el=document.getElementById(id),on=e=>{e.preventDefault();input[key]=true},off=e=>{e.preventDefault();input[key]=false};['pointerdown','touchstart'].forEach(x=>el.addEventListener(x,on,{passive:false}));['pointerup','pointercancel','pointerleave','touchend'].forEach(x=>el.addEventListener(x,off,{passive:false}))}
+bind('left','left');bind('right','right');
+addEventListener('keydown',e=>{if(['ArrowLeft','a','A'].includes(e.key))input.left=true;if(['ArrowRight','d','D'].includes(e.key))input.right=true});
+addEventListener('keyup',e=>{if(['ArrowLeft','a','A'].includes(e.key))input.left=false;if(['ArrowRight','d','D'].includes(e.key))input.right=false});
 
 function spawn(){let r=Math.random(),type=r<.56?'heart':r<.72?'fish':r<.87?'flower':'rock';items.push({type,x:rnd(36,W-36),y:-28,size:type==='rock'?28:24,vy:rnd(120,190)+score*2,rot:rnd(-.5,.5)})}
 function burst(x,y,e,n=7){for(let i=0;i<n;i++)particles.push({x,y,vx:rnd(-90,90),vy:rnd(-170,-40),life:1,e})}
 function coll(a,b){return Math.abs(a.x-b.x)<(a.w/2+b.size*.75)&&Math.abs(a.y-b.y)<(a.h/2+b.size*.75)}
-function collect(it){if(it.type==='heart'){score++;combo=Math.min(5,combo+1);burst(it.x,it.y,'💗',8)}else if(it.type==='fish'){score+=Math.max(1,Math.floor(combo/2));burst(it.x,it.y,'🐟',6)}else if(it.type==='flower'){score++;combo=Math.min(5,combo+1);burst(it.x,it.y,'🌸',6)}else{combo=1;burst(it.x,it.y,'💫',6)}score=Math.min(score,18);scoreEl.textContent=score;comboEl.textContent='x'+combo;if(it.type!=='rock'&&Math.random()<.3)bubble.textContent=msgs[Math.floor(Math.random()*msgs.length)];if(score>=18){running=false;setTimeout(win,350)}}
-function win(){hud.classList.add('hidden');controls.classList.add('hidden');bubble.classList.add('hidden');winSubtitle.textContent='Sua lontrinha venceu! 🦦';winText.textContent='A lontrinha juntou todos os corações e agora só quer carinho, abraço e beijinho.';winScreen.classList.remove('hidden')}
+function collect(it){
+  if(it.type==='heart'){score++;combo=Math.min(5,combo+1);burst(it.x,it.y,'💗',8)}
+  else if(it.type==='fish'){score+=Math.max(1,Math.floor(combo/2));burst(it.x,it.y,'🐟',6)}
+  else if(it.type==='flower'){score++;combo=Math.min(5,combo+1);burst(it.x,it.y,'🌸',6)}
+  else{combo=1;burst(it.x,it.y,'💫',6)}
+  score=Math.min(score,18);scoreEl.textContent=score;comboEl.textContent='x'+combo;
+  if(it.type!=='rock'&&Math.random()<.3)bubble.textContent=msgs[Math.floor(Math.random()*msgs.length)];
+  if(score>=18){running=false;setTimeout(win,350)}
+}
+function win(){hud.classList.add('hidden');controls.classList.add('hidden');bubble.classList.add('hidden');winScreen.classList.remove('hidden')}
 
 function cloud(x,y){ctx.beginPath();ctx.arc(x,y,24,0,7);ctx.arc(x+26,y-9,31,0,7);ctx.arc(x+57,y,22,0,7);ctx.fill()}
-function bg(t){ctx.clearRect(0,0,W,H);let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#cdeeff');g.addColorStop(.55,'#eefbff');g.addColorStop(.56,'#dff1bd');g.addColorStop(1,'#b8de8f');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.fillStyle='#fffddd';for(let i=0;i<6;i++)cloud(((i*170+t*.009)%(W+220))-110,70+(i%3)*58);ctx.fillStyle='#8ac56d';for(let x=-20;x<W+50;x+=40){ctx.beginPath();ctx.arc(x,H-84+Math.sin(x*.07)*8,30,0,7);ctx.fill()}ctx.fillStyle='#72c2e666';ctx.beginPath();ctx.ellipse(W*.5,H-28,W*.62,52,0,0,7);ctx.fill()}
-function otter(x,y){ctx.save();ctx.translate(x,y);ctx.strokeStyle='#6f4736';ctx.lineWidth=10;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(18,18);ctx.quadraticCurveTo(48,30,38,50);ctx.stroke();ctx.fillStyle='#6f4736';ctx.beginPath();ctx.ellipse(0,8,24,30,0,0,7);ctx.fill();ctx.fillStyle='#8b6048';ctx.beginPath();ctx.arc(0,-10,23,0,7);ctx.fill();ctx.fillStyle='#6f4736';ctx.beginPath();ctx.arc(-16,-18,8,0,7);ctx.arc(16,-18,8,0,7);ctx.fill();ctx.fillStyle='#d9b79a';ctx.beginPath();ctx.ellipse(0,-4,14,11,0,0,7);ctx.fill();ctx.fillStyle='#201819';ctx.beginPath();ctx.arc(-8,-12,2.6,0,7);ctx.arc(8,-12,2.6,0,7);ctx.arc(0,-5,3,0,7);ctx.fill();ctx.fillStyle='#ffaabe88';ctx.beginPath();ctx.arc(-12,-3,4.5,0,7);ctx.arc(12,-3,4.5,0,7);ctx.fill();ctx.restore()}
-function hyrax(x,y){ctx.save();ctx.translate(x,y);ctx.fillStyle='#7f6b5d';ctx.beginPath();ctx.ellipse(0,10,28,24,0,0,7);ctx.fill();ctx.fillStyle='#94806f';ctx.beginPath();ctx.arc(0,-5,22,0,7);ctx.fill();ctx.fillStyle='#7b685a';ctx.beginPath();ctx.arc(-14,-13,8,0,7);ctx.arc(14,-13,8,0,7);ctx.fill();ctx.fillStyle='#d8c6ad';ctx.beginPath();ctx.ellipse(0,1,12,9,0,0,7);ctx.fill();ctx.fillStyle='#221b1a';ctx.beginPath();ctx.arc(-8,-7,2.6,0,7);ctx.arc(8,-7,2.6,0,7);ctx.arc(0,0,3,0,7);ctx.fill();ctx.fillStyle='#ffaabe77';ctx.beginPath();ctx.arc(-10,3,4.2,0,7);ctx.arc(10,3,4.2,0,7);ctx.fill();ctx.restore()}
+function bg(t){
+  ctx.clearRect(0,0,W,H);
+  let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#bfe9ff');g.addColorStop(.55,'#eefaff');g.addColorStop(.56,'#dff1bd');g.addColorStop(1,'#a9d77f');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#fffddd';for(let i=0;i<6;i++)cloud(((i*170+t*.009)%(W+220))-110,70+(i%3)*58);
+  ctx.fillStyle='#8ac56d';for(let x=-20;x<W+50;x+=40){ctx.beginPath();ctx.arc(x,H-84+Math.sin(x*.07)*8,30,0,7);ctx.fill()}
+  ctx.fillStyle='#72c2e666';ctx.beginPath();ctx.ellipse(W*.5,H-28,W*.62,52,0,0,7);ctx.fill()
+}
+function otter(x,y){
+  ctx.save();ctx.translate(x,y);
+  ctx.strokeStyle='#6f4736';ctx.lineWidth=10;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(18,18);ctx.quadraticCurveTo(48,30,38,50);ctx.stroke();
+  ctx.fillStyle='#6f4736';ctx.beginPath();ctx.ellipse(0,8,24,30,0,0,7);ctx.fill();
+  ctx.fillStyle='#8b6048';ctx.beginPath();ctx.arc(0,-10,23,0,7);ctx.fill();
+  ctx.fillStyle='#6f4736';ctx.beginPath();ctx.arc(-16,-18,8,0,7);ctx.arc(16,-18,8,0,7);ctx.fill();
+  ctx.fillStyle='#d9b79a';ctx.beginPath();ctx.ellipse(0,-4,14,11,0,0,7);ctx.fill();
+  ctx.fillStyle='#201819';ctx.beginPath();ctx.arc(-8,-12,2.6,0,7);ctx.arc(8,-12,2.6,0,7);ctx.arc(0,-5,3,0,7);ctx.fill();
+  ctx.fillStyle='#ffaabe88';ctx.beginPath();ctx.arc(-12,-3,4.5,0,7);ctx.arc(12,-3,4.5,0,7);ctx.fill();
+  ctx.restore()
+}
 function drawItem(it){ctx.save();ctx.translate(it.x,it.y);ctx.rotate(it.rot);ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=(it.size*1.45)+'px system-ui';ctx.fillText(it.type==='heart'?'💗':it.type==='fish'?'🐟':it.type==='flower'?'🌸':'🪨',0,0);ctx.restore()}
 
-function loop(now){if(!running)return;const dt=Math.min(.035,(now-last)/1000);last=now;spawnTimer-=dt;msgTimer-=dt;if(spawnTimer<=0){spawn();spawnTimer=rnd(.38,.66)}if(msgTimer<=0){bubble.textContent=msgs[Math.floor(Math.random()*msgs.length)];msgTimer=rnd(2.8,4.8)}const accel=760,max=310;if(input.left)player.vx-=accel*dt;if(input.right)player.vx+=accel*dt;if(!input.left&&!input.right)player.vx*=Math.pow(.86,dt*60);player.vx=Math.max(-max,Math.min(max,player.vx));player.x+=player.vx*dt;player.x=Math.max(36,Math.min(W-36,player.x));player.y=H-126;items.forEach(it=>{it.y+=it.vy*dt;it.rot+=dt*(it.type==='rock'?1.2:.35)});for(let i=items.length-1;i>=0;i--){const it=items[i];if(coll(player,it)){collect(it);items.splice(i,1)}else if(it.y>H+50)items.splice(i,1)}particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=280*dt;p.life-=dt*1.8});particles=particles.filter(p=>p.life>0);bg(now);items.forEach(drawItem);animal==='otter'?otter(player.x,player.y):hyrax(player.x,player.y);particles.forEach(p=>{ctx.save();ctx.globalAlpha=Math.max(0,p.life);ctx.font='20px system-ui';ctx.fillText(p.e,p.x,p.y);ctx.restore()});requestAnimationFrame(loop)}
+function loop(now){
+  if(!running)return;
+  const dt=Math.min(.035,(now-last)/1000);last=now;spawnTimer-=dt;msgTimer-=dt;
+  if(spawnTimer<=0){spawn();spawnTimer=rnd(.38,.66)}
+  if(msgTimer<=0){bubble.textContent=msgs[Math.floor(Math.random()*msgs.length)];msgTimer=rnd(2.8,4.8)}
+  const accel=760,max=310;
+  if(input.left)player.vx-=accel*dt;if(input.right)player.vx+=accel*dt;if(!input.left&&!input.right)player.vx*=Math.pow(.86,dt*60);
+  player.vx=Math.max(-max,Math.min(max,player.vx));player.x+=player.vx*dt;player.x=Math.max(36,Math.min(W-36,player.x));player.y=H-126;
+  items.forEach(it=>{it.y+=it.vy*dt;it.rot+=dt*(it.type==='rock'?1.2:.35)});
+  for(let i=items.length-1;i>=0;i--){const it=items[i];if(coll(player,it)){collect(it);items.splice(i,1)}else if(it.y>H+50)items.splice(i,1)}
+  particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=280*dt;p.life-=dt*1.8});particles=particles.filter(p=>p.life>0);
+  bg(now);items.forEach(drawItem);otter(player.x,player.y);
+  particles.forEach(p=>{ctx.save();ctx.globalAlpha=Math.max(0,p.life);ctx.font='20px system-ui';ctx.fillText(p.e,p.x,p.y);ctx.restore()});
+  requestAnimationFrame(loop)
+}
 </script>
 </body>
 </html>
