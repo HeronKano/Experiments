@@ -3,148 +3,112 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#ffe7ef">
-<title>Lontrinha & Hírax — Caça aos Corações</title>
+<meta name="theme-color" content="#ffd7e8">
+<title>Te awawa meu amor 💗</title>
 <style>
-  *{box-sizing:border-box} html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(#ffdfea,#fff7d8);color:#3e2b31;overflow:hidden}
-  body{display:grid;place-items:center}
-  #wrap{width:min(100vw,760px);height:100dvh;max-height:980px;position:relative;background:linear-gradient(#aee6ff 0 55%,#bde59a 55% 100%);overflow:hidden;box-shadow:0 0 60px #0002}
-  canvas{width:100%;height:100%;display:block;touch-action:none}
-  .hud{position:absolute;left:14px;right:14px;top:max(12px,env(safe-area-inset-top));display:flex;justify-content:space-between;gap:10px;pointer-events:none}
-  .pill{background:#fffdf8dd;border:2px solid #ffffffcc;backdrop-filter:blur(8px);border-radius:999px;padding:8px 12px;font-weight:800;box-shadow:0 5px 18px #5c405023}
-  .controls{position:absolute;left:0;right:0;bottom:max(12px,env(safe-area-inset-bottom));display:flex;justify-content:space-between;padding:0 16px;pointer-events:none}
-  .ctrl{width:76px;height:76px;border:none;border-radius:24px;background:#fffdf8df;box-shadow:0 7px 20px #0002;font-size:34px;font-weight:900;pointer-events:auto;user-select:none;-webkit-user-select:none;touch-action:none}
-  .ctrl:active{transform:scale(.95);background:#fff}
-  .panel{position:absolute;inset:0;display:grid;place-items:center;padding:22px;background:linear-gradient(#ffe4efee,#fff6ddee);z-index:5}
-  .card{width:min(92%,520px);background:#fffdf9;border:3px solid #fff;border-radius:30px;padding:24px;text-align:center;box-shadow:0 18px 55px #6a3b502b}
-  h1{margin:0 0 8px;font-size:clamp(28px,7vw,46px);line-height:1}
-  p{margin:8px 0 18px;line-height:1.35}
-  .pick{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
-  .pick button,.mainbtn{border:0;border-radius:20px;padding:14px 12px;font-size:18px;font-weight:850;background:#ffd4e2;color:#402a32;box-shadow:0 5px 0 #e8a9bd;cursor:pointer}
-  .pick button:nth-child(2){background:#e6dccb;box-shadow:0 5px 0 #c6b59a}
-  .pick button:active,.mainbtn:active{transform:translateY(3px);box-shadow:0 2px 0 #d4a}
-  .mainbtn{background:#ff8fb3;color:white;box-shadow:0 5px 0 #db5c88;width:100%}
-  .tiny{font-size:13px;opacity:.7}
-  .hidden{display:none}
+:root{--pink:#ff8fba;--pink2:#ffd4e4;--cream:#fffaf5;--brown:#5d414b;--sky:#cdeeff;--grass:#d8efb2}
+*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--brown);background:linear-gradient(#ffe0ee,#fff8dd);overflow:hidden}
+body{display:grid;place-items:center}#app{position:relative;width:min(100vw,780px);height:100dvh;max-height:980px;overflow:hidden;background:linear-gradient(var(--sky) 0 58%,var(--grass) 58% 100%);box-shadow:0 0 60px #0002}
+canvas{width:100%;height:100%;display:block;touch-action:none}
+.hidden{display:none!important}
+.hud{position:absolute;top:max(10px,env(safe-area-inset-top));left:12px;right:12px;z-index:3;display:flex;justify-content:space-between;gap:10px;pointer-events:none}
+.pill,.message{background:#fffdf8e8;border:2px solid #fff;backdrop-filter:blur(8px);box-shadow:0 8px 22px #6b405020;font-weight:900}
+.pill{border-radius:999px;padding:9px 14px}
+.message{position:absolute;left:50%;top:75px;transform:translateX(-50%);z-index:3;border-radius:999px;padding:8px 14px;text-align:center;max-width:92%;white-space:nowrap}
+.controls{position:absolute;left:0;right:0;bottom:max(12px,env(safe-area-inset-bottom));z-index:3;display:flex;justify-content:space-between;padding:0 16px;pointer-events:none}
+.ctrl{pointer-events:auto;width:78px;height:78px;border:0;border-radius:24px;background:#fffdf8e8;color:var(--brown);box-shadow:0 8px 22px #0002;font-size:32px;font-weight:900;touch-action:none}.ctrl:active{transform:scale(.95)}
+.screen{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:18px;background:linear-gradient(#ffe8f1ee,#fff8dfee)}
+.card{width:min(94%,580px);background:#fffdf9f7;border:3px solid #fff;border-radius:30px;padding:22px 18px;text-align:center;box-shadow:0 20px 55px #76435e2d}
+h1{margin:0;line-height:1;font-size:clamp(29px,7vw,48px);color:#d15f8e}.subtitle{margin:9px 0 4px;font-size:clamp(18px,4.2vw,25px);font-weight:900;color:#7d5361}p{margin:10px 0;line-height:1.38}
+.photo-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0 14px}.photo-card{background:#fff;border-radius:22px;padding:10px;box-shadow:0 8px 25px #6b405020}.photo-frame{aspect-ratio:1/1;border-radius:18px;display:grid;place-items:center;background:linear-gradient(#ffe8f1,#fff8dd);overflow:hidden}.animal-big{font-size:70px;filter:drop-shadow(0 8px 8px #0001)}.photo-label{margin-top:8px;font-weight:900}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.pick button,.mainbtn{border:0;border-radius:20px;padding:14px 12px;font-size:18px;font-weight:900;color:#fff;background:linear-gradient(#ff9dc1,#ff79ac);box-shadow:0 6px 0 #d45b8c;cursor:pointer}.pick button.alt{background:linear-gradient(#b6987f,#98806c);box-shadow:0 6px 0 #766252}.pick button:active,.mainbtn:active{transform:translateY(3px)}
+.tiny{margin-top:12px;font-size:13px;opacity:.78}.reward{margin:16px 0;background:#fff5fb;border:2px dashed #ffb0cf;border-radius:20px;padding:14px;font-weight:800}
+.floaters{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}.floaters span{position:absolute;bottom:-30px;animation:floatUp linear infinite;opacity:.75}.floaters span:nth-child(1){left:7%;animation-duration:9s}.floaters span:nth-child(2){left:23%;animation-duration:12s;animation-delay:2s}.floaters span:nth-child(3){left:46%;animation-duration:8s;animation-delay:1s}.floaters span:nth-child(4){left:65%;animation-duration:11s;animation-delay:3s}.floaters span:nth-child(5){left:84%;animation-duration:10s;animation-delay:1.5s}@keyframes floatUp{from{transform:translateY(0);opacity:0}15%{opacity:.8}to{transform:translateY(-110vh) scale(1.3);opacity:0}}
 </style>
 </head>
 <body>
-<div id="wrap">
+<div id="app">
+  <div class="floaters"><span>💗</span><span>💞</span><span>🌸</span><span>✨</span><span>💗</span></div>
   <canvas id="game"></canvas>
-  <div class="hud hidden" id="hud">
-    <div class="pill">💗 <span id="score">0</span>/15</div>
+
+  <div id="hud" class="hud hidden">
+    <div class="pill">💗 <span id="score">0</span>/18</div>
     <div class="pill">✨ <span id="combo">x1</span></div>
   </div>
-  <div class="controls hidden" id="controls">
-    <button class="ctrl" id="left" aria-label="Mover para esquerda">←</button>
-    <button class="ctrl" id="right" aria-label="Mover para direita">→</button>
+
+  <div id="bubble" class="message hidden">te awawa meu amor 💗</div>
+
+  <div id="controls" class="controls hidden">
+    <button class="ctrl" id="left">←</button>
+    <button class="ctrl" id="right">→</button>
   </div>
-  <section class="panel" id="start">
+
+  <section id="start" class="screen">
     <div class="card">
-      <h1>Lontrinha & Hírax 💗</h1>
-      <p>Uma missão importante: recolha <b>15 corações</b> antes que eles desapareçam. Peixinhos e frutinhas dão bônus. Pedras fazem perder o combo.</p>
-      <div class="pick">
-        <button data-animal="otter">🦦<br>Jogar de lontra</button>
-        <button data-animal="hyrax">🪨<br>Jogar de hírax</button>
+      <h1>te awawa meu amor 💗</h1>
+      <div class="subtitle">Lontrinha & Hírax</div>
+      <p>Uma missão muito séria: juntar <b>18 corações</b> para encher o mundinho de carinho. Pegue peixinhos e flores, mas cuidado com as pedrinhas.</p>
+
+      <div class="photo-row">
+        <div class="photo-card">
+          <div class="photo-frame"><div class="animal-big">🦦</div></div>
+          <div class="photo-label">lontrinha</div>
+        </div>
+        <div class="photo-card">
+          <div class="photo-frame"><div class="animal-big">🐹</div></div>
+          <div class="photo-label">hírax fofinho</div>
+        </div>
       </div>
-      <div class="tiny">No celular: use ← →. No computador: A/D ou setas.</div>
+
+      <div class="pick">
+        <button data-animal="otter">Jogar de lontra 🦦</button>
+        <button class="alt" data-animal="hyrax">Jogar de hírax 🐹</button>
+      </div>
+      <div class="tiny">No celular: use ← → · No computador: setas ou A/D</div>
     </div>
   </section>
-  <section class="panel hidden" id="win">
+
+  <section id="win" class="screen hidden">
     <div class="card">
-      <h1>Você conseguiu! 💞</h1>
-      <p id="winText">15 corações resgatados com sucesso.</p>
-      <p><b>Prêmio desbloqueado:</b><br>um abraço infinito + direito de escolher o próximo passeio. 🦦💗</p>
-      <button class="mainbtn" id="again">Jogar de novo</button>
+      <h1>te awawa meu amor 💞</h1>
+      <div id="winSubtitle" class="subtitle">Você venceu!</div>
+      <p id="winText"></p>
+      <div class="reward">prêmio desbloqueado:<br><b>1 abraço infinito + 1 beijo + 1 date fofinho</b> 💗</div>
+      <button id="again" class="mainbtn">jogar de novo</button>
     </div>
   </section>
 </div>
+
 <script>
-const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
-const wrap=document.getElementById('wrap');
-let W=0,H=0,dpr=1;
-function resize(){dpr=Math.min(devicePixelRatio||1,2);W=wrap.clientWidth;H=wrap.clientHeight;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
-addEventListener('resize',resize);resize();
-
-const hud=document.getElementById('hud'),controls=document.getElementById('controls');
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d'),app=document.getElementById('app');
+const hud=document.getElementById('hud'),controls=document.getElementById('controls'),bubble=document.getElementById('bubble');
 const scoreEl=document.getElementById('score'),comboEl=document.getElementById('combo');
-let running=false,animal='otter',score=0,combo=1,last=0,spawnT=0;
-let input={l:false,r:false},items=[],particles=[];
-const player={x:W/2,y:0,w:58,h:58,vx:0};
+const startScreen=document.getElementById('start'),winScreen=document.getElementById('win'),winSubtitle=document.getElementById('winSubtitle'),winText=document.getElementById('winText');
+let W=0,H=0,dpr=1,running=false,animal='otter',score=0,combo=1,last=0,spawnTimer=0,msgTimer=0,items=[],particles=[];
+let input={left:false,right:false}; const player={x:0,y:0,w:64,h:64,vx:0};
+const msgs=['te awawa meu amor 💗','você é fofinha demais ✨','lontrinha mode ativado 🦦','hírax fofinho detected 🐹','coleta de carinho em andamento 💞','mais um coração pra você 🌸'];
+function resize(){dpr=Math.min(devicePixelRatio||1,2);W=app.clientWidth;H=app.clientHeight;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
+const rnd=(a,b)=>a+Math.random()*(b-a);
 
-function rnd(a,b){return a+Math.random()*(b-a)}
-function startGame(kind){animal=kind;score=0;combo=1;items=[];particles=[];player.x=W/2;player.vx=0;running=true;spawnT=0;last=performance.now();document.getElementById('start').classList.add('hidden');document.getElementById('win').classList.add('hidden');hud.classList.remove('hidden');controls.classList.remove('hidden');scoreEl.textContent=score;comboEl.textContent='x'+combo;requestAnimationFrame(loop)}
-document.querySelectorAll('[data-animal]').forEach(b=>b.onclick=()=>startGame(b.dataset.animal));
-document.getElementById('again').onclick=()=>{document.getElementById('win').classList.add('hidden');document.getElementById('start').classList.remove('hidden');};
+function start(kind){animal=kind;score=0;combo=1;items=[];particles=[];player.x=W/2;player.y=H-126;player.vx=0;spawnTimer=0;msgTimer=1;last=performance.now();running=true;scoreEl.textContent='0';comboEl.textContent='x1';startScreen.classList.add('hidden');winScreen.classList.add('hidden');hud.classList.remove('hidden');controls.classList.remove('hidden');bubble.classList.remove('hidden');bubble.textContent='te awawa meu amor 💗';requestAnimationFrame(loop)}
+document.querySelectorAll('[data-animal]').forEach(b=>b.onclick=()=>start(b.dataset.animal));document.getElementById('again').onclick=()=>{winScreen.classList.add('hidden');startScreen.classList.remove('hidden')};
 
-function bind(id,key){let b=document.getElementById(id);const on=e=>{e.preventDefault();input[key]=true},off=e=>{e.preventDefault();input[key]=false};['pointerdown','touchstart'].forEach(t=>b.addEventListener(t,on,{passive:false}));['pointerup','pointercancel','pointerleave','touchend'].forEach(t=>b.addEventListener(t,off,{passive:false}))}
-bind('left','l');bind('right','r');
-addEventListener('keydown',e=>{if(['ArrowLeft','a','A'].includes(e.key))input.l=true;if(['ArrowRight','d','D'].includes(e.key))input.r=true});
-addEventListener('keyup',e=>{if(['ArrowLeft','a','A'].includes(e.key))input.l=false;if(['ArrowRight','d','D'].includes(e.key))input.r=false});
+function bind(id,key){const el=document.getElementById(id),on=e=>{e.preventDefault();input[key]=true},off=e=>{e.preventDefault();input[key]=false};['pointerdown','touchstart'].forEach(x=>el.addEventListener(x,on,{passive:false}));['pointerup','pointercancel','pointerleave','touchend'].forEach(x=>el.addEventListener(x,off,{passive:false}))}bind('left','left');bind('right','right');
+addEventListener('keydown',e=>{if(['ArrowLeft','a','A'].includes(e.key))input.left=true;if(['ArrowRight','d','D'].includes(e.key))input.right=true});addEventListener('keyup',e=>{if(['ArrowLeft','a','A'].includes(e.key))input.left=false;if(['ArrowRight','d','D'].includes(e.key))input.right=false});
 
-function spawn(){
-  let r=Math.random(),type=r<.56?'heart':r<.72?'fish':r<.86?'berry':'rock';
-  items.push({type,x:rnd(35,W-35),y:-30,vy:rnd(120,190)+(score*2),size:type==='rock'?28:24,rot:rnd(-.5,.5)});
-}
-function burst(x,y,emoji,n=7){for(let i=0;i<n;i++)particles.push({x,y,vx:rnd(-90,90),vy:rnd(-150,-40),life:1,emoji})}
-function collide(a,b){return Math.abs(a.x-b.x)<(a.w/2+b.size*.7)&&Math.abs(a.y-b.y)<(a.h/2+b.size*.7)}
-function hit(item){
- if(item.type==='heart'){score++;combo=Math.min(5,combo+1);burst(item.x,item.y,'💗')}
- else if(item.type==='fish'||item.type==='berry'){score+=Math.max(1,Math.floor(combo/2));burst(item.x,item.y,item.type==='fish'?'🐟':'🫐',5)}
- else {combo=1;burst(item.x,item.y,'💫',6)}
- score=Math.min(score,15);scoreEl.textContent=score;comboEl.textContent='x'+combo;
- if(score>=15){running=false;setTimeout(win,350)}
-}
-function win(){hud.classList.add('hidden');controls.classList.add('hidden');document.getElementById('winText').textContent=(animal==='otter'?'A lontrinha':'O hírax')+' encontrou todos os 15 corações. Missão cumprida!';document.getElementById('win').classList.remove('hidden')}
+function spawn(){let r=Math.random(),type=r<.56?'heart':r<.72?'fish':r<.87?'flower':'rock';items.push({type,x:rnd(36,W-36),y:-28,size:type==='rock'?28:24,vy:rnd(120,190)+score*2,rot:rnd(-.5,.5)})}
+function burst(x,y,e,n=7){for(let i=0;i<n;i++)particles.push({x,y,vx:rnd(-90,90),vy:rnd(-170,-40),life:1,e})}
+function coll(a,b){return Math.abs(a.x-b.x)<(a.w/2+b.size*.75)&&Math.abs(a.y-b.y)<(a.h/2+b.size*.75)}
+function collect(it){if(it.type==='heart'){score++;combo=Math.min(5,combo+1);burst(it.x,it.y,'💗',8)}else if(it.type==='fish'){score+=Math.max(1,Math.floor(combo/2));burst(it.x,it.y,'🐟',6)}else if(it.type==='flower'){score++;combo=Math.min(5,combo+1);burst(it.x,it.y,'🌸',6)}else{combo=1;burst(it.x,it.y,'💫',6)}score=Math.min(score,18);scoreEl.textContent=score;comboEl.textContent='x'+combo;if(it.type!=='rock'&&Math.random()<.3)bubble.textContent=msgs[Math.floor(Math.random()*msgs.length)];if(score>=18){running=false;setTimeout(win,350)}}
+function win(){hud.classList.add('hidden');controls.classList.add('hidden');bubble.classList.add('hidden');winSubtitle.textContent=animal==='otter'?'Sua lontrinha venceu! 🦦':'Seu hírax venceu! 🐹';winText.textContent=animal==='otter'?'A lontrinha juntou todos os corações e agora só quer carinho, abraço e beijinho.':'O hírax fofinho juntou todos os corações e agora quer muito colo e amor.';winScreen.classList.remove('hidden')}
 
-function drawBg(t){
- ctx.clearRect(0,0,W,H);
- let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#aee7ff');g.addColorStop(.56,'#eaf8ff');g.addColorStop(.57,'#cceca8');g.addColorStop(1,'#97ce7a');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
- ctx.fillStyle='#fff9';for(let i=0;i<5;i++){let x=((i*180+t*.008)% (W+220))-110,y=80+(i%3)*70;cloud(x,y)}
- ctx.fillStyle='#78b85f';for(let x=-20;x<W+40;x+=38){ctx.beginPath();ctx.arc(x,H-80+Math.sin(x*.09)*8,30,0,Math.PI*2);ctx.fill()}
- ctx.fillStyle='#76b9df66';ctx.beginPath();ctx.ellipse(W*.5,H-25,W*.62,54,0,0,Math.PI*2);ctx.fill();
-}
-function cloud(x,y){ctx.beginPath();ctx.arc(x,y,25,0,7);ctx.arc(x+28,y-8,34,0,7);ctx.arc(x+62,y,25,0,7);ctx.fill()}
+function cloud(x,y){ctx.beginPath();ctx.arc(x,y,24,0,7);ctx.arc(x+26,y-9,31,0,7);ctx.arc(x+57,y,22,0,7);ctx.fill()}
+function bg(t){ctx.clearRect(0,0,W,H);let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#cdeeff');g.addColorStop(.55,'#eefbff');g.addColorStop(.56,'#dff1bd');g.addColorStop(1,'#b8de8f');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.fillStyle='#fffddd';for(let i=0;i<6;i++)cloud(((i*170+t*.009)%(W+220))-110,70+(i%3)*58);ctx.fillStyle='#8ac56d';for(let x=-20;x<W+50;x+=40){ctx.beginPath();ctx.arc(x,H-84+Math.sin(x*.07)*8,30,0,7);ctx.fill()}ctx.fillStyle='#72c2e666';ctx.beginPath();ctx.ellipse(W*.5,H-28,W*.62,52,0,0,7);ctx.fill()}
+function otter(x,y){ctx.save();ctx.translate(x,y);ctx.strokeStyle='#6f4736';ctx.lineWidth=10;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(18,18);ctx.quadraticCurveTo(48,30,38,50);ctx.stroke();ctx.fillStyle='#6f4736';ctx.beginPath();ctx.ellipse(0,8,24,30,0,0,7);ctx.fill();ctx.fillStyle='#8b6048';ctx.beginPath();ctx.arc(0,-10,23,0,7);ctx.fill();ctx.fillStyle='#6f4736';ctx.beginPath();ctx.arc(-16,-18,8,0,7);ctx.arc(16,-18,8,0,7);ctx.fill();ctx.fillStyle='#d9b79a';ctx.beginPath();ctx.ellipse(0,-4,14,11,0,0,7);ctx.fill();ctx.fillStyle='#201819';ctx.beginPath();ctx.arc(-8,-12,2.6,0,7);ctx.arc(8,-12,2.6,0,7);ctx.arc(0,-5,3,0,7);ctx.fill();ctx.fillStyle='#ffaabe88';ctx.beginPath();ctx.arc(-12,-3,4.5,0,7);ctx.arc(12,-3,4.5,0,7);ctx.fill();ctx.restore()}
+function hyrax(x,y){ctx.save();ctx.translate(x,y);ctx.fillStyle='#7f6b5d';ctx.beginPath();ctx.ellipse(0,10,28,24,0,0,7);ctx.fill();ctx.fillStyle='#94806f';ctx.beginPath();ctx.arc(0,-5,22,0,7);ctx.fill();ctx.fillStyle='#7b685a';ctx.beginPath();ctx.arc(-14,-13,8,0,7);ctx.arc(14,-13,8,0,7);ctx.fill();ctx.fillStyle='#d8c6ad';ctx.beginPath();ctx.ellipse(0,1,12,9,0,0,7);ctx.fill();ctx.fillStyle='#221b1a';ctx.beginPath();ctx.arc(-8,-7,2.6,0,7);ctx.arc(8,-7,2.6,0,7);ctx.arc(0,0,3,0,7);ctx.fill();ctx.fillStyle='#ffaabe77';ctx.beginPath();ctx.arc(-10,3,4.2,0,7);ctx.arc(10,3,4.2,0,7);ctx.fill();ctx.restore()}
+function drawItem(it){ctx.save();ctx.translate(it.x,it.y);ctx.rotate(it.rot);ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=(it.size*1.45)+'px system-ui';ctx.fillText(it.type==='heart'?'💗':it.type==='fish'?'🐟':it.type==='flower'?'🌸':'🪨',0,0);ctx.restore()}
 
-function drawOtter(x,y){
- ctx.save();ctx.translate(x,y);
- ctx.fillStyle='#6f4736';ctx.beginPath();ctx.ellipse(0,4,25,30,0,0,7);ctx.fill();
- ctx.beginPath();ctx.arc(-17,-16,9,0,7);ctx.arc(17,-16,9,0,7);ctx.fill();
- ctx.fillStyle='#8b6048';ctx.beginPath();ctx.arc(0,-10,24,0,7);ctx.fill();
- ctx.fillStyle='#d9b79a';ctx.beginPath();ctx.ellipse(0,-4,14,11,0,0,7);ctx.fill();
- ctx.fillStyle='#221b1a';ctx.beginPath();ctx.arc(-8,-13,2.7,0,7);ctx.arc(8,-13,2.7,0,7);ctx.arc(0,-5,3.2,0,7);ctx.fill();
- ctx.strokeStyle='#6f4736';ctx.lineWidth=8;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(18,17);ctx.quadraticCurveTo(45,28,38,47);ctx.stroke();
- ctx.restore();
-}
-function drawHyrax(x,y){
- ctx.save();ctx.translate(x,y);
- ctx.fillStyle='#7b6b5a';ctx.beginPath();ctx.ellipse(0,8,30,24,0,0,7);ctx.fill();
- ctx.beginPath();ctx.arc(-15,-11,10,0,7);ctx.arc(14,-12,10,0,7);ctx.fill();
- ctx.fillStyle='#8f806e';ctx.beginPath();ctx.ellipse(0,-6,26,22,0,0,7);ctx.fill();
- ctx.fillStyle='#d4c2a8';ctx.beginPath();ctx.ellipse(0,1,13,9,0,0,7);ctx.fill();
- ctx.fillStyle='#221b1a';ctx.beginPath();ctx.arc(-9,-9,2.8,0,7);ctx.arc(9,-9,2.8,0,7);ctx.arc(0,-1,3,0,7);ctx.fill();
- ctx.restore();
-}
-function drawItem(it){
- ctx.save();ctx.translate(it.x,it.y);ctx.rotate(it.rot);
- ctx.font=(it.size*1.45)+'px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
- let e=it.type==='heart'?'💗':it.type==='fish'?'🐟':it.type==='berry'?'🫐':'🪨';ctx.fillText(e,0,0);ctx.restore();
-}
-
-function loop(now){
- if(!running)return;
- let dt=Math.min(.035,(now-last)/1000);last=now;spawnT-=dt;
- if(spawnT<=0){spawn();spawnT=rnd(.42,.72)}
- const accel=760,fric=.86,max=290;
- if(input.l)player.vx-=accel*dt;if(input.r)player.vx+=accel*dt;if(!input.l&&!input.r)player.vx*=Math.pow(fric,dt*60);
- player.vx=Math.max(-max,Math.min(max,player.vx));player.x+=player.vx*dt;player.x=Math.max(34,Math.min(W-34,player.x));player.y=H-126;
- items.forEach(it=>{it.y+=it.vy*dt;it.rot+=dt*(it.type==='rock'?1.3:.35)});
- for(let i=items.length-1;i>=0;i--){let it=items[i];if(collide(player,it)){hit(it);items.splice(i,1)}else if(it.y>H+50)items.splice(i,1)}
- particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=280*dt;p.life-=dt*1.8});particles=particles.filter(p=>p.life>0);
- drawBg(now);items.forEach(drawItem);animal==='otter'?drawOtter(player.x,player.y):drawHyrax(player.x,player.y);
- particles.forEach(p=>{ctx.globalAlpha=Math.max(0,p.life);ctx.font='20px system-ui';ctx.fillText(p.emoji,p.x,p.y);ctx.globalAlpha=1});
- requestAnimationFrame(loop);
-}
+function loop(now){if(!running)return;const dt=Math.min(.035,(now-last)/1000);last=now;spawnTimer-=dt;msgTimer-=dt;if(spawnTimer<=0){spawn();spawnTimer=rnd(.38,.66)}if(msgTimer<=0){bubble.textContent=msgs[Math.floor(Math.random()*msgs.length)];msgTimer=rnd(2.8,4.8)}const accel=760,max=310;if(input.left)player.vx-=accel*dt;if(input.right)player.vx+=accel*dt;if(!input.left&&!input.right)player.vx*=Math.pow(.86,dt*60);player.vx=Math.max(-max,Math.min(max,player.vx));player.x+=player.vx*dt;player.x=Math.max(36,Math.min(W-36,player.x));player.y=H-126;items.forEach(it=>{it.y+=it.vy*dt;it.rot+=dt*(it.type==='rock'?1.2:.35)});for(let i=items.length-1;i>=0;i--){const it=items[i];if(coll(player,it)){collect(it);items.splice(i,1)}else if(it.y>H+50)items.splice(i,1)}particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=280*dt;p.life-=dt*1.8});particles=particles.filter(p=>p.life>0);bg(now);items.forEach(drawItem);animal==='otter'?otter(player.x,player.y):hyrax(player.x,player.y);particles.forEach(p=>{ctx.save();ctx.globalAlpha=Math.max(0,p.life);ctx.font='20px system-ui';ctx.fillText(p.e,p.x,p.y);ctx.restore()});requestAnimationFrame(loop)}
 </script>
 </body>
 </html>
