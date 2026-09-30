@@ -270,7 +270,7 @@ function economyTick(initial){
     var newGdp=(prodValue+commerce)*(0.78+adminEff*.22)*welfare;
     r.gdpPrev=r.gdp||newGdp;r.gdp=newGdp;r.growth=(r.gdp-r.gdpPrev)/(r.gdpPrev+1);
 
-    var revenue=r.gdp*r.tax*.055*adminEff+importValue*r.tariff*.035;
+    var revenue=r.gdp*r.tax*.19*adminEff+importValue*r.tariff*.05;
     var armyCost=r.army*(.085+.025*r.tech.mil);
     var eduCost=r.pop*r.education*.0055;
     var adminCost=r.pop*r.bureaucracy*.0035;
@@ -297,7 +297,7 @@ function economyTick(initial){
     r.tech.admin+=r.education*.00014;
     r.tech.mil+=r.education*.00009;
 
-    if(r.debt>r.gdp*2.8&&Math.random()<.08){
+    if(r.debt>r.gdp*2.8&&Math.random()<.035){
       r.defaults++;r.debt*=.72;r.stability-=9;r.legitimacy-=6;
       log('crisis','<b>'+r.n+'</b> entrou em moratória parcial após uma crise de dívida.');
     }
