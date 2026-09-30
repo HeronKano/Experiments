@@ -1,29 +1,34 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Eryndor — Simulação Geopolítica</title>
-<link rel="stylesheet" href="style.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080b10">
+<title>Eryndor — Grand Strategy Autônoma</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="topbar">
-  <div class="brand"><strong>ERYNDOR</strong><span>simulação geopolítica autônoma</span></div>
+  <div class="brand"><strong>ERYNDOR</strong><span>grand strategy · 28 potências autônomas</span></div>
   <div class="timebox"><span id="dateLabel">1 Jan 1444</span><small id="eraLabel">Ano 1444</small></div>
   <div class="controls">
     <button id="pauseBtn" class="control active">⏸</button>
     <button class="speed active" data-speed="1">1×</button>
-    <button class="speed" data-speed="3">3×</button>
-    <button class="speed" data-speed="8">8×</button>
-    <button class="speed" data-speed="20">20×</button>
+    <button class="speed" data-speed="4">4×</button>
+    <button class="speed" data-speed="12">12×</button>
+    <button class="speed" data-speed="30">30×</button>
     <button id="resetBtn" class="control danger">↻</button>
   </div>
 </header>
 <main class="layout">
   <section class="mapcard">
     <div class="maptoolbar">
-      <div><strong>Continente de Eryndor</strong><span id="worldStatus">observador — a simulação roda sozinha</span></div>
-      <div class="layers"><button class="layer active" data-layer="political">Político</button><button class="layer" data-layer="economy">Economia</button><button class="layer" data-layer="relations">Relações</button></div>
+      <div><strong>Continente de Eryndor</strong><span id="worldStatus">observador — 28 IAs expandem, negociam e guerreiam sem script fixo</span></div>
+      <div class="layers">
+        <button class="layer active" data-layer="political">Político</button>
+        <button class="layer" data-layer="economy">Economia</button>
+        <button class="layer" data-layer="relations">Relações</button>
+      </div>
     </div>
     <div class="canvaswrap">
       <canvas id="world" width="1200" height="760"></canvas>
@@ -32,18 +37,34 @@
     </div>
   </section>
   <aside class="sidebar">
-    <section class="panel summary"><div class="panelhead"><strong>Visão do mundo</strong><span id="simState">RODANDO</span></div><div class="kpis"><div><span>Reinos</span><b id="kpiRealms">0</b></div><div><span>Guerras</span><b id="kpiWars">0</b></div><div><span>Rotas</span><b id="kpiTrade">0</b></div><div><span>Batalhas</span><b id="kpiBattles">0</b></div></div></section>
+    <section class="panel summary">
+      <div class="panelhead"><strong>Visão do mundo</strong><span id="simState">RODANDO</span></div>
+      <div class="kpis">
+        <div><span>Estados</span><b id="kpiRealms">28</b></div>
+        <div><span>Guerras</span><b id="kpiWars">0</b></div>
+        <div><span>Alianças</span><b id="kpiTrade">0</b></div>
+        <div><span>Batalhas</span><b id="kpiBattles">0</b></div>
+      </div>
+    </section>
     <section class="panel tabsPanel">
-      <div class="tabs"><button class="tab active" data-tab="chronicle">Crônica</button><button class="tab" data-tab="realms">Reinos</button><button class="tab" data-tab="diplomacy">Diplomacia</button><button class="tab" data-tab="selected">Inspeção</button></div>
+      <div class="tabs">
+        <button class="tab active" data-tab="chronicle">Crônica</button>
+        <button class="tab" data-tab="realms">Estados</button>
+        <button class="tab" data-tab="diplomacy">Diplomacia</button>
+        <button class="tab" data-tab="selected">Inspeção</button>
+      </div>
       <div id="chronicle" class="tabpane active"><div class="feed" id="feed"></div></div>
       <div id="realms" class="tabpane"><div id="realmList"></div></div>
       <div id="diplomacy" class="tabpane"><div id="diploMatrix"></div></div>
-      <div id="selected" class="tabpane"><div id="selectedInfo" class="empty">Clique em um reino ou província no mapa.</div></div>
+      <div id="selected" class="tabpane"><div id="selectedInfo" class="empty">Clique em uma província ou Estado no mapa.</div></div>
     </section>
-    <section class="panel tickerPanel"><div class="panelhead"><strong>Mercado continental</strong><span>fluxo em tempo real</span></div><div class="market" id="market"></div></section>
+    <section class="panel tickerPanel">
+      <div class="panelhead"><strong>Economia continental</strong><span>recursos e preços</span></div>
+      <div class="market" id="market"></div>
+    </section>
   </aside>
 </main>
-<footer class="footer">Simulação procedural. Nenhum reino é controlado pelo jogador; pause, acelere e observe.</footer>
+<footer class="footer">Simulação procedural. Todas as potências são controladas por IA; pause, acelere, clique e acompanhe a história emergente.</footer>
 <script src="game.js"></script>
 </body>
 </html>
