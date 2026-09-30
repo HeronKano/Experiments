@@ -366,8 +366,8 @@ function actionScores(r){
     {k:'infra',s:20*r.commerce+r.industry*8+r.tradeVolume*.015+Math.max(0,4-infra)*8},
     {k:'education',s:21*r.learning+techGap*90+(r.treasury>220?12:0)},
     {k:'admin',s:18*r.governance+r.corruption*70+(r.tax>.22?8:0)},
-    {k:'army',s:12*r.aggression+threat*42+(warsOf(r.id).length?35:0)},
-    {k:'fort',s:threat*36+(relation(r.id,strongestNeighbor(r.id))<-20?16:0)},
+    {k:'army',s:7*r.aggression+threat*18+(warsOf(r.id).length?34:0)},
+    {k:'fort',s:threat*14+(relation(r.id,strongestNeighbor(r.id))<-20?8:0)},
     {k:'repay',s:debtRatio*55+(debtRatio>1?25:0)}
   ];
 }
@@ -500,9 +500,9 @@ function goalLabel(g){
 function warTick(){
   state.realms.forEach(function(r){
     if(!r.alive||state.player===r.id||warsOf(r.id).length)return;
-    var ns=neighbors(r.id),best=null,bs=8;
+    var ns=neighbors(r.id),best=null,bs=14;
     ns.forEach(function(b){var s=warScore(r.id,b);if(s>bs){bs=s;best=b;}});
-    if(best!==null&&Math.random()<clamp(.035+bs*.0025,.03,.18))declareWar(r.id,best);
+    if(best!==null&&Math.random()<clamp(.018+bs*.0016,.02,.12))declareWar(r.id,best);
   });
 
   state.wars.filter(function(w){return !w.ended;}).forEach(function(w){
