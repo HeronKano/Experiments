@@ -1,93 +1,720 @@
-(() => {
+
+(function(){
 'use strict';
-const canvas=document.getElementById('world'),ctx=canvas.getContext('2d');
-const W=canvas.width,H=canvas.height;
-const names=['Aurélia','Nordmark','Verdânia','Drávia','Selênia','Orthen','Karsovia','Ilíria'];
-const colors=['#d0a84e','#5985b5','#59a273','#b5575d','#8a6bb4','#b6814c','#727b8d','#c87a9e'];
-const traits=[['mercantil','cauteloso'],['militarista','disciplinado'],['agrário','diplomático'],['expansionista','orgulhoso'],['naval','mercantil'],['isolacionista','rico'],['militarista','oportunista'],['diplomático','comercial']];
-const goods=['Grãos','Ferro','Madeira','Sal','Tecidos','Cavalos'];
-const goodsEmoji=['◉','◆','♣','◇','▦','♞'];
-const rng=(a=1,b=0)=>b+Math.random()*(a-b), clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const pick=a=>a[Math.floor(Math.random()*a.length)];
-const pairKey=(a,b)=>a<b?`${a}-${b}`:`${b}-${a}`;
-const state={days:0,running:true,speed:1,layer:'political',wars:[],routes:[],armies:[],events:[],battles:0,selected:null,lastEco:0,lastTrade:0,lastDiplomacy:0,lastWar:0};
-const provinces=[
- {id:0,n:'Solária',x:170,y:160,p:[[80,95],[220,65],[300,130],[280,230],[120,245],[55,180]],o:0,res:4},
- {id:1,n:'Valecoroa',x:405,y:160,p:[[300,130],[450,78],[545,135],[515,235],[280,230]],o:0,res:5},
- {id:2,n:'Altomonte',x:655,y:160,p:[[545,135],[695,85],[790,155],[760,255],[515,235]],o:1,res:1},
- {id:3,n:'Campos Dourados',x:185,y:325,p:[[120,245],[280,230],[315,350],[170,405],[70,340]],o:0,res:0},
- {id:4,n:'Ribeira',x:420,y:320,p:[[280,230],[515,235],[520,370],[315,350]],o:0,res:3},
- {id:5,n:'Bosque Velho',x:650,y:330,p:[[515,235],[760,255],[795,380],[650,420],[520,370]],o:2,res:2},
- {id:6,n:'Costa Âmbar',x:220,y:505,p:[[170,405],[315,350],[395,485],[300,610],[125,560]],o:2,res:3},
- {id:7,n:'Passo Cinzento',x:445,y:485,p:[[315,350],[520,370],[585,505],[395,485]],o:2,res:1},
- {id:8,n:'Lago Verde',x:625,y:500,p:[[520,370],[650,420],[755,520],[585,505]],o:3,res:0},
- {id:9,n:'Fronteira Fria',x:875,y:255,p:[[790,155],[930,195],[920,340],[795,380],[760,255]],o:1,res:5},
- {id:10,n:'Dravograd',x:865,y:455,p:[[795,380],[920,340],[985,455],[895,590],[755,520]],o:3,res:1},
- {id:11,n:'Planícies do Sul',x:500,y:610,p:[[300,610],[395,485],[585,505],[755,520],[695,650],[470,680]],o:3,res:4},
- {id:12,n:'Costa de Safira',x:1050,y:160,p:[[930,85],[1140,70],[1190,190],[1110,270],[965,230]],o:4,res:3},
- {id:13,n:'Selênia',x:1040,y:340,p:[[965,230],[1110,270],[1175,390],[1085,455],[920,340]],o:4,res:4},
- {id:14,n:'Orthen',x:1030,y:540,p:[[920,340],[1085,455],[1160,610],[980,670],[895,590]],o:5,res:0},
- {id:15,n:'Karsgrad',x:800,y:650,p:[[695,650],[755,520],[895,590],[980,670],[845,735],[690,725]],o:6,res:1},
- {id:16,n:'Ilíria',x:230,y:690,p:[[125,560],[300,610],[470,680],[360,740],[120,730]],o:7,res:2}
+
+var canvas=document.getElementById('world');
+var ctx=canvas.getContext('2d');
+var W=canvas.width,H=canvas.height;
+var N_REALMS=28;
+var HEX=18;
+var DX=HEX*1.5;
+var DY=Math.sqrt(3)*HEX;
+
+var realmNames=[
+'Aurélia','Nordmark','Verdânia','Drávia','Selênia','Orthen','Karsovia','Ilíria',
+'Vesper','Arken','Meren','Talassar','Ruthenia','Belvar','Cyranor','Dalmor',
+'Estravia','Falken','Galdor','Helvec','Iskaria','Jorvik','Korven','Lysara',
+'Moravia','Nereth','Ostara','Prydain'
 ];
-const adjacency=[[1,3],[0,2,4],[1,5,9],[0,4,6],[1,3,5,7],[2,4,8,9],[3,7,11,16],[4,6,8,11],[5,7,10,11],[2,5,10,13],[8,9,11,14,15],[6,7,8,10,15,16],[13],[12,9,14],[13,10,15],[10,11,14,16],[6,11,15]];
-const realms=names.map((n,i)=>({id:i,n,color:colors[i],traits:traits[i],gold:Math.round(rng(280,150)),pop:Math.round(rng(130,70)),army:Math.round(rng(65,30)),tech:rng(1.35,.8),stability:Math.round(rng(86,55)),prestige:Math.round(rng(65,20)),aggression:rng(.85,.2),tradeBias:rng(.95,.45),diploBias:rng(.9,.35),alive:true,capital:null,income:0,goods:Array.from({length:6},()=>rng(1.5,.3))}));
-provinces.forEach(p=>{p.dev=Math.round(rng(10,5));p.pop=Math.round(rng(18,7));p.occupied=null;p.unrest=0;if(realms[p.o]&&!realms[p.o].capital) realms[p.o].capital=p.id;});
-const rel={}; for(let i=0;i<realms.length;i++)for(let j=i+1;j<realms.length;j++)rel[pairKey(i,j)]=Math.round(rng(55,-35));
-const treaties=new Map();
-const price=goods.map(()=>rng(1.5,.7));
-function owned(id){return provinces.filter(p=>p.o===id)}
-function relation(a,b){return a===b?100:(rel[pairKey(a,b)]??0)}
-function setRelation(a,b,v){if(a!==b)rel[pairKey(a,b)]=clamp(v,-100,100)}
-function atWar(a,b){return state.wars.some(w=>!w.ended&&((w.a===a&&w.b===b)||(w.a===b&&w.b===a)))}
-function allied(a,b){return treaties.get(pairKey(a,b))==='alliance'}
-function tradePact(a,b){return treaties.get(pairKey(a,b))==='trade'}
-function border(a,b){return provinces.some(p=>p.o===a&&adjacency[p.id].some(q=>provinces[q].o===b))}
-function enemyOf(a){const w=state.wars.find(w=>!w.ended&&(w.a===a||w.b===a));return w?(w.a===a?w.b:w.a):null}
-function log(type,text){state.events.unshift({day:state.days,type,text});state.events=state.events.slice(0,120);renderFeed()}
-function fmtDate(){const d=new Date(1444,0,1);d.setDate(d.getDate()+Math.floor(state.days));return new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'short',year:'numeric'}).format(d).replace('.','')}
-function ymd(){return 1444+Math.floor(state.days/365)}
-function economyTick(){realms.forEach(r=>{if(!r.alive)return;const ps=owned(r.id);if(!ps.length){r.alive=false;return}const base=ps.reduce((s,p)=>s+p.dev*.75+p.pop*.13,0);const trade=state.routes.filter(x=>x.a===r.id||x.b===r.id).reduce((s,x)=>s+x.value*.12,0);const warCost=enemyOf(r.id)!==null?r.army*.035:0;r.income=base+trade-warCost;r.gold+=r.income*.14;r.pop+=ps.reduce((s,p)=>s+p.pop,0)*.0008;r.stability=clamp(r.stability+rng(.5,-.6)-(enemyOf(r.id)!==null?.18:0),20,95);ps.forEach(p=>{p.pop=clamp(p.pop+rng(.05,.01),3,35);p.unrest=clamp(p.unrest+rng(.5,-.6),0,80)});if(r.gold>160&&Math.random()<.16){const p=pick(ps);p.dev=clamp(p.dev+1,4,18);r.gold-=22}if(r.gold>100&&r.army<ps.length*25&&Math.random()<.24){r.army+=rng(4,1);r.gold-=8}});for(let g=0;g<goods.length;g++){const supply=realms.reduce((s,r)=>s+r.goods[g]*(owned(r.id).length||0),0);price[g]=clamp(price[g]+rng(.035,-.035)+(30-supply)*.0007,.45,2.8)}}
-function diplomacyTick(){for(let i=0;i<realms.length;i++)for(let j=i+1;j<realms.length;j++){const a=realms[i],b=realms[j];if(!a.alive||!b.alive)continue;let delta=rng(1.2,-1.2);if(tradePact(i,j))delta+=.35;if(allied(i,j))delta+=.55;if(atWar(i,j))delta-=1.1;if(border(i,j)&&!allied(i,j))delta-=.12;setRelation(i,j,relation(i,j)+delta)}const a=pick(realms.filter(r=>r.alive));if(!a)return;const candidates=realms.filter(r=>r.alive&&r.id!==a.id&&!atWar(a.id,r.id));if(!candidates.length)return;const b=pick(candidates);const k=pairKey(a.id,b.id),rv=relation(a.id,b.id),current=treaties.get(k);if(!current&&rv>38&&Math.random()<a.diploBias*.28){treaties.set(k,'trade');createTrade(a.id,b.id,true);setRelation(a.id,b.id,rv+8);log('diplo',`<b>${a.n}</b> e <b>${b.n}</b> assinaram um tratado comercial.`)}else if(current==='trade'&&rv>68&&Math.random()<a.diploBias*.18){treaties.set(k,'alliance');setRelation(a.id,b.id,rv+12);log('diplo',`<b>${a.n}</b> e <b>${b.n}</b> formaram uma aliança defensiva.`)}else if(current&&rv<5&&Math.random()<.22){treaties.delete(k);state.routes=state.routes.filter(x=>pairKey(x.a,x.b)!==k);log('diplo',`<b>${a.n}</b> rompeu seus acordos com <b>${b.n}</b>.`)}else if(rv<-55&&Math.random()<.12){log('diplo',`<b>${a.n}</b> denunciou publicamente <b>${b.n}</b>; a tensão regional aumentou.`)}}
-function createTrade(a,b,forced=false){if(state.routes.some(r=>pairKey(r.a,r.b)===pairKey(a,b)))return;const pa=pick(owned(a)),pb=pick(owned(b));if(!pa||!pb)return;const g=Math.floor(rng(goods.length,0)),v=rng(18,7)*(forced?1.2:1);state.routes.push({a,b,pa:pa.id,pb:pb.id,good:g,value:v,phase:Math.random()});log('trade',`Mercadores abriram a rota <b>${realms[a].n} ↔ ${realms[b].n}</b>, negociando ${goods[g].toLowerCase()}.`)}
-function tradeTick(){const alive=realms.filter(r=>r.alive);if(alive.length<2)return;for(let tries=0;tries<3;tries++){const a=pick(alive),b=pick(alive.filter(x=>x.id!==a.id));if(!b||atWar(a.id,b.id))continue;const rv=relation(a.id,b.id);if(rv>-15&&Math.random()<(.12+a.tradeBias*.2)){createTrade(a.id,b.id);break}}if(state.routes.length>14){state.routes.sort((a,b)=>b.value-a.value);state.routes.length=14}state.routes.forEach(r=>{r.value=clamp(r.value+rng(.5,-.45),3,30)})}
-function alliedPowers(id){return realms.filter(r=>r.alive&&r.id!==id&&allied(id,r.id)).map(r=>r.id)}
-function declareWar(a,b){if(a===b||atWar(a,b)||!realms[a].alive||!realms[b].alive)return;const war={id:Date.now()+Math.random(),a,b,start:state.days,score:0,ended:false,battles:0};state.wars.push(war);setRelation(a,b,-100);treaties.delete(pairKey(a,b));state.routes=state.routes.filter(x=>pairKey(x.a,x.b)!==pairKey(a,b));log('war',`⚔ <b>${realms[a].n}</b> declarou guerra a <b>${realms[b].n}</b>.`);alliedPowers(b).forEach(x=>{if(x!==a&&!atWar(a,x)&&Math.random()<.55){log('war',`<b>${realms[x].n}</b> honrou sua aliança com ${realms[b].n}.`);declareWar(a,x)}})}
-function warTick(){const alive=realms.filter(r=>r.alive);alive.forEach(a=>{if(enemyOf(a.id)!==null)return;const targets=alive.filter(b=>b.id!==a.id&&border(a.id,b.id)&&!allied(a.id,b.id));if(!targets.length)return;targets.sort((x,y)=>relation(a.id,x.id)-relation(a.id,y.id));const b=targets[0];const advantage=(a.army/(b.army+1))*a.tech/b.tech;const motive=a.aggression*(relation(a.id,b.id)<-20?1.4:1)*(owned(a.id).length>=owned(b.id).length?.8:1.15);if(relation(a.id,b.id)<-18&&advantage>.72&&Math.random()<motive*.13)declareWar(a.id,b.id)});state.wars.filter(w=>!w.ended).forEach(w=>{sendArmy(w.a,w.b,w);sendArmy(w.b,w.a,w);const age=state.days-w.start;if(age>180&&Math.abs(w.score)>35&&Math.random()<.12)peace(w);else if(age>500&&Math.random()<.18)peace(w)})}
-function sendArmy(a,b,war){if(state.armies.some(x=>x.owner===a&&x.war===war.id))return;const frontier=owned(a).filter(p=>adjacency[p.id].some(q=>provinces[q].o===b));if(!frontier.length)return;const from=pick(frontier),to=pick(adjacency[from.id].map(i=>provinces[i]).filter(p=>p.o===b));if(!to)return;const size=clamp(realms[a].army*rng(.35,.18),4,28);realms[a].army-=size;state.armies.push({owner:a,enemy:b,war:war.id,from:from.id,to:to.id,size,progress:0,speed:rng(.004,.0025)})}
-function battle(army){const war=state.wars.find(w=>w.id===army.war);if(!war||war.ended)return;const target=provinces[army.to],defRealm=realms[target.o];let defense=defRealm.army*rng(.13,.05)+target.dev*.35+rng(5,1);const atk=army.size*realms[army.owner].tech*rng(1.2,.82),def=defense*defRealm.tech*rng(1.2,.82);state.battles++;war.battles++;if(atk>def){const losses=clamp(def/(atk+def)*army.size*.75,1,army.size*.7);army.size-=losses;defRealm.army=clamp(defRealm.army-defense*.35,0,999);target.o=army.owner;target.occupied=army.owner;target.unrest=clamp(target.unrest+18,0,100);war.score+=(war.a===army.owner?1:-1)*(10+target.dev);realms[army.owner].prestige+=2;log('battle',`⚔ <b>${realms[army.owner].n}</b> venceu em <b>${target.n}</b> e ocupou a província.`)}else{const losses=clamp(def/(atk+def)*army.size*1.1,2,army.size);army.size-=losses;defRealm.army=clamp(defRealm.army-defense*.12,0,999);war.score+=(war.a===army.owner?-1:1)*(4+rng(5,1));log('battle',`🛡 <b>${defRealm.n}</b> repeliu uma ofensiva em <b>${target.n}</b>.`)}if(army.size>2)realms[army.owner].army+=army.size*.4}
-function peace(w){w.ended=true;const winner=w.score>0?w.a:w.b,loser=winner===w.a?w.b:w.a;setRelation(w.a,w.b,-45);realms[winner].prestige+=8;realms[loser].stability-=6;state.armies=state.armies.filter(a=>a.war!==w.id);log('war',`☮ <b>${realms[winner].n}</b> e <b>${realms[loser].n}</b> assinaram paz após ${Math.round(state.days-w.start)} dias de guerra.`);checkAlive()}
-function checkAlive(){realms.forEach(r=>{if(r.alive&&owned(r.id).length===0){r.alive=false;log('war',`☠ <b>${r.n}</b> deixou de existir como Estado soberano.`)}})}
-function updateArmies(dt){for(let i=state.armies.length-1;i>=0;i--){const a=state.armies[i],war=state.wars.find(w=>w.id===a.war);if(!war||war.ended){state.armies.splice(i,1);continue}a.progress+=a.speed*dt*state.speed;if(a.progress>=1){battle(a);state.armies.splice(i,1)}}}
-function randomEvents(){if(Math.random()<.003*state.speed){const r=pick(realms.filter(x=>x.alive));if(!r)return;const e=Math.random();if(e<.33){r.gold+=25;log('trade',`Uma feira excepcional enriqueceu <b>${r.n}</b>.`)}else if(e<.66){r.stability=clamp(r.stability-7,0,100);log('diplo',`Distúrbios internos abalaram <b>${r.n}</b>.`)}else{r.tech+=.03;log('diplo',`Artesãos de <b>${r.n}</b> introduziram novas técnicas militares e produtivas.`)}}}
-function update(dt){if(!state.running)return;state.days+=dt*.012*state.speed;updateArmies(dt);randomEvents();if(state.days-state.lastEco>7){state.lastEco=state.days;economyTick()}if(state.days-state.lastDiplomacy>18){state.lastDiplomacy=state.days;diplomacyTick()}if(state.days-state.lastTrade>25){state.lastTrade=state.days;tradeTick()}if(state.days-state.lastWar>28){state.lastWar=state.days;warTick()}state.routes.forEach(r=>{r.phase=(r.phase+dt*.00011*state.speed*(r.value/12))%1})}
-function polygonPath(p){ctx.beginPath();ctx.moveTo(p.p[0][0],p.p[0][1]);for(let i=1;i<p.p.length;i++)ctx.lineTo(p.p[i][0],p.p[i][1]);ctx.closePath()}
-function shade(hex,f){const n=parseInt(hex.slice(1),16),r=(n>>16)&255,g=(n>>8)&255,b=n&255;return `rgb(${clamp(r*f,0,255)},${clamp(g*f,0,255)},${clamp(b*f,0,255)})`}
-function draw(){ctx.clearRect(0,0,W,H);const sea=ctx.createLinearGradient(0,0,0,H);sea.addColorStop(0,'#102c3b');sea.addColorStop(1,'#0a1c28');ctx.fillStyle=sea;ctx.fillRect(0,0,W,H);ctx.strokeStyle='#6d899622';ctx.lineWidth=1;for(let x=0;x<W;x+=60){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+100,H);ctx.stroke()}drawRoutes();provinces.forEach(p=>{const r=realms[p.o];polygonPath(p);let fill=r.color;if(state.layer==='economy')fill=shade('#8fb17b',.55+p.dev/22);else if(state.layer==='relations'&&state.selected?.kind==='realm'){const v=relation(state.selected.id,p.o);fill=v>35?'#4e9a70':v<-35?'#a4484f':'#777b80'}ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=p.occupied!==null?'#f0d88a':'#071019';ctx.lineWidth=p.occupied!==null?5:4;ctx.stroke();if(state.selected?.kind==='province'&&state.selected.id===p.id){polygonPath(p);ctx.strokeStyle='#fff3bc';ctx.lineWidth=7;ctx.stroke()}});drawProvinceLabels();drawArmies();drawCapitals()}
-function drawRoutes(){state.routes.forEach(r=>{const a=provinces[r.pa],b=provinces[r.pb];if(!a||!b)return;ctx.save();ctx.setLineDash([5,7]);ctx.strokeStyle='#7bd3aa55';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(a.x,a.y);const mx=(a.x+b.x)/2,my=(a.y+b.y)/2-70;ctx.quadraticCurveTo(mx,my,b.x,b.y);ctx.stroke();ctx.setLineDash([]);const t=r.phase,mt=1-t,x=mt*mt*a.x+2*mt*t*mx+t*t*b.x,y=mt*mt*a.y+2*mt*t*my+t*t*b.y;ctx.fillStyle='#c7ffe2';ctx.beginPath();ctx.arc(x,y,3.2,0,Math.PI*2);ctx.fill();ctx.restore()})}
-function drawProvinceLabels(){ctx.textAlign='center';provinces.forEach(p=>{ctx.fillStyle='#ffffffdd';ctx.font='700 12px system-ui';ctx.fillText(p.n,p.x,p.y);ctx.fillStyle='#eef5fa99';ctx.font='9px system-ui';ctx.fillText(`dev ${p.dev} · pop ${Math.round(p.pop)}k`,p.x,p.y+14)})}
-function drawCapitals(){realms.forEach(r=>{const p=provinces[r.capital];if(!p||p.o!==r.id)return;ctx.fillStyle='#fff1bd';ctx.font='16px Georgia';ctx.textAlign='center';ctx.fillText('★',p.x,p.y-22)})}
-function drawArmies(){state.armies.forEach(a=>{const p=provinces[a.from],q=provinces[a.to],t=clamp(a.progress,0,1),x=p.x+(q.x-p.x)*t,y=p.y+(q.y-p.y)*t;ctx.fillStyle='#081017';ctx.strokeStyle=realms[a.owner].color;ctx.lineWidth=4;ctx.beginPath();ctx.arc(x,y,13,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='white';ctx.font='700 9px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(Math.round(a.size),x,y)})}
-function pointInPoly(x,y,poly){let inside=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1];const inter=((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi);if(inter)inside=!inside}return inside}
-function canvasPos(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height,rx:e.clientX-r.left,ry:e.clientY-r.top}}
-canvas.addEventListener('mousemove',e=>{const m=canvasPos(e),p=provinces.find(p=>pointInPoly(m.x,m.y,p.p)),tip=document.getElementById('tooltip');if(!p){tip.style.display='none';return}tip.style.display='block';tip.style.left=`${Math.min(m.rx+14,canvas.clientWidth-170)}px`;tip.style.top=`${m.ry+8}px`;const r=realms[p.o];tip.innerHTML=`<b>${p.n}</b><span>${r.n}<br>Desenvolvimento ${p.dev} · Pop. ${Math.round(p.pop)}k<br>Recurso: ${goods[p.res]}</span>`});
-canvas.addEventListener('mouseleave',()=>document.getElementById('tooltip').style.display='none');
-canvas.addEventListener('click',e=>{const m=canvasPos(e),p=provinces.find(p=>pointInPoly(m.x,m.y,p.p));if(p){state.selected={kind:'province',id:p.id};showSelected();openTab('selected')}});
-function renderTop(){document.getElementById('dateLabel').textContent=fmtDate();document.getElementById('eraLabel').textContent=`Ano ${ymd()}`;document.getElementById('kpiRealms').textContent=realms.filter(r=>r.alive).length;document.getElementById('kpiWars').textContent=state.wars.filter(w=>!w.ended).length;document.getElementById('kpiTrade').textContent=state.routes.length;document.getElementById('kpiBattles').textContent=state.battles;document.getElementById('simState').textContent=state.running?'RODANDO':'PAUSADO';document.getElementById('worldStatus').textContent=state.wars.some(w=>!w.ended)?'conflitos ativos — observe as frentes':'observador — a simulação roda sozinha'}
-function renderFeed(){const el=document.getElementById('feed');el.innerHTML=state.events.map(e=>`<div class="event ${e.type}"><time>${Math.floor(e.day)}d</time>${e.text}</div>`).join('')||'<div class="empty">A história ainda está começando…</div>'}
-function renderRealms(){const el=document.getElementById('realmList');el.innerHTML=realms.filter(r=>r.alive).map(r=>`<div class="realmrow" data-r="${r.id}"><div class="rhead"><strong><i style="display:inline-block;width:8px;height:8px;background:${r.color};border-radius:2px;margin-right:5px"></i>${r.n}</strong><span class="badge">${r.traits[0]}</span></div><div class="subline"><span>${owned(r.id).length} prov. · ${Math.round(r.army)}k tropas</span><span>${Math.round(r.gold)} ¤</span></div><div class="meters"><div class="meter"><i style="width:${r.stability}%;background:${r.color}"></i></div><div class="meter"><i style="width:${clamp(r.prestige,0,100)}%;background:#d6bd74"></i></div></div></div>`).join('');el.querySelectorAll('[data-r]').forEach(x=>x.onclick=()=>{state.selected={kind:'realm',id:+x.dataset.r};showSelected();openTab('selected')})}
-function renderDiplomacy(){let html='<div class="matrix">';for(let i=0;i<realms.length;i++)for(let j=i+1;j<realms.length;j++){if(!realms[i].alive||!realms[j].alive)continue;const v=Math.round(relation(i,j)),cls=v>25?'pos':v<-25?'neg':'neu',tags=[];if(allied(i,j))tags.push('aliança');else if(tradePact(i,j))tags.push('tratado comercial');if(atWar(i,j))tags.push('GUERRA');html+=`<div class="pair"><div class="pairhead"><span>${realms[i].n} ↔ ${realms[j].n}</span><b class="relation ${cls}">${v>0?'+':''}${v}</b></div><div class="tags">${tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div></div>`}document.getElementById('diploMatrix').innerHTML=html+'</div>'}
-function showSelected(){const s=state.selected,el=document.getElementById('selectedInfo');if(!s){el.innerHTML='<div class="empty">Clique no mapa.</div>';return}if(s.kind==='province'){const p=provinces[s.id],r=realms[p.o];el.innerHTML=`<div class="inspect"><h2>${p.n}</h2><div class="owner" style="color:${r.color}">${r.n}</div><div class="stats"><div class="stat"><span>Desenvolvimento</span><b>${p.dev}</b></div><div class="stat"><span>População</span><b>${Math.round(p.pop)}k</b></div><div class="stat"><span>Recurso</span><b>${goods[p.res]}</b></div><div class="stat"><span>Agitação</span><b>${Math.round(p.unrest)}%</b></div></div><p>${p.occupied!==null?'Província recentemente ocupada. A soberania mudou durante uma guerra.':'Território sob administração estável.'}</p></div>`}else{const r=realms[s.id],ps=owned(r.id),wars=state.wars.filter(w=>!w.ended&&(w.a===r.id||w.b===r.id));el.innerHTML=`<div class="inspect"><h2>${r.n}</h2><div class="owner">${r.traits.join(' · ')}</div><div class="stats"><div class="stat"><span>Províncias</span><b>${ps.length}</b></div><div class="stat"><span>Tesouro</span><b>${Math.round(r.gold)} ¤</b></div><div class="stat"><span>Exército</span><b>${Math.round(r.army)}k</b></div><div class="stat"><span>Estabilidade</span><b>${Math.round(r.stability)}%</b></div><div class="stat"><span>Prestígio</span><b>${Math.round(r.prestige)}</b></div><div class="stat"><span>Receita</span><b>${r.income.toFixed(1)}</b></div></div><p>${wars.length?`Em guerra com ${wars.map(w=>realms[w.a===r.id?w.b:w.a].n).join(', ')}.`:'Atualmente em paz.'} A IA pondera riqueza, relações, fronteiras, força militar e traços antes de agir.</p></div>`}}
-function renderMarket(){document.getElementById('market').innerHTML=goods.map((g,i)=>`<div class="commodity"><span>${goodsEmoji[i]} ${g}</span><div class="spark"><i style="width:${clamp(price[i]/2.8*100,5,100)}%"></i></div><b>${price[i].toFixed(2)}</b></div>`).join('')}
-function renderLegend(){document.getElementById('legend').innerHTML=realms.filter(r=>r.alive).map(r=>`<span><i style="background:${r.color}"></i>${r.n}</span>`).join('')}
-function renderUI(){renderTop();renderRealms();renderDiplomacy();renderMarket();renderLegend();if(state.selected)showSelected()}
-function openTab(id){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active',p.id===id))}
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>openTab(b.dataset.tab));
-document.querySelectorAll('.layer').forEach(b=>b.onclick=()=>{state.layer=b.dataset.layer;document.querySelectorAll('.layer').forEach(x=>x.classList.toggle('active',x===b))});
-document.querySelectorAll('.speed').forEach(b=>b.onclick=()=>{state.speed=+b.dataset.speed;state.running=true;document.querySelectorAll('.speed').forEach(x=>x.classList.toggle('active',x===b));document.getElementById('pauseBtn').classList.remove('active')});
-document.getElementById('pauseBtn').onclick=()=>{state.running=!state.running;document.getElementById('pauseBtn').classList.toggle('active',!state.running);document.getElementById('pauseBtn').textContent=state.running?'⏸':'▶'};
-document.getElementById('resetBtn').onclick=()=>location.reload();
-function seed(){log('diplo','Os soberanos de Eryndor iniciam o ano avaliando vizinhos, mercados e fronteiras.');[[0,2],[1,4],[3,5],[6,7]].forEach(([a,b])=>{setRelation(a,b,rng(65,40));if(Math.random()<.7){treaties.set(pairKey(a,b),'trade');createTrade(a,b,true)}});setRelation(0,1,-38);setRelation(2,3,-42);setRelation(3,6,-52);setRelation(4,5,35);economyTick();renderFeed();renderUI()}
-let last=performance.now(),uiClock=0;function loop(now){const dt=Math.min(now-last,60);last=now;update(dt);draw();uiClock+=dt;if(uiClock>500){renderUI();uiClock=0}requestAnimationFrame(loop)}
-seed();requestAnimationFrame(loop);
+var traits=['expansionista','mercantil','militarista','diplomático','industrial','cauteloso','oportunista'];
+var goods=['Grãos','Ferro','Madeira','Sal','Tecidos','Cavalos'];
+var goodSymbols=['●','◆','♣','◇','▦','♞'];
+
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function rnd(a,b){return (b===undefined?0:b)+Math.random()*((b===undefined?a:a)- (b===undefined?0:b));}
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function key(a,b){return a<b?a+'-'+b:b+'-'+a;}
+function colorFor(i){return 'hsl('+((i*137.508)%360).toFixed(1)+',58%,55%)';}
+function relClass(v){return v>35?'pos':v<-35?'neg':'neu';}
+
+var state=null;
+
+function generateWorld(){
+  var provinces=[];
+  var byCoord={};
+  var id=0;
+  for(var q=0;q<42;q++){
+    for(var r=0;r<23;r++){
+      var x=48+q*DX;
+      var y=38+(r+(q%2)*0.5)*DY;
+      if(x>W-35||y>H-28)continue;
+      var nx=(x-W*0.50)/(W*0.48);
+      var ny=(y-H*0.50)/(H*0.45);
+      var edge=nx*nx+ny*ny;
+      var noise=Math.sin(q*0.73+r*0.37)*0.11+Math.cos(q*0.31-r*0.81)*0.08;
+      var bay=(q>29&&q<35&&r>7&&r<14)?0.38:0;
+      var gulf=(q>8&&q<14&&r>13)?0.28:0;
+      if(edge+bay+gulf>1.0+noise)continue;
+      var p={id:id++,q:q,r:r,x:x,y:y,o:-1,dev:Math.round(rnd(11,4)),pop:rnd(18,5),res:Math.floor(rnd(goods.length)),fort:0,unrest:0,capital:false};
+      provinces.push(p);byCoord[q+','+r]=p;
+    }
+  }
+  var even=[[0,-1],[1,-1],[1,0],[0,1],[-1,0],[-1,-1]];
+  var odd=[[0,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0]];
+  provinces.forEach(function(p){
+    var dirs=p.q%2?odd:even;
+    p.nei=[];
+    dirs.forEach(function(d){
+      var n=byCoord[(p.q+d[0])+','+(p.r+d[1])];
+      if(n)p.nei.push(n.id);
+    });
+  });
+
+  var seeds=[];
+  var candidates=provinces.slice();
+  var first=pick(candidates);seeds.push(first);
+  while(seeds.length<N_REALMS){
+    var best=null,score=-1;
+    for(var i=0;i<candidates.length;i++){
+      var p=candidates[i],mind=1e9;
+      for(var j=0;j<seeds.length;j++){
+        var d=Math.hypot(p.x-seeds[j].x,p.y-seeds[j].y);
+        if(d<mind)mind=d;
+      }
+      var coast=p.nei.length<6?20:0;
+      var s=mind+coast+rnd(18,0);
+      if(s>score){score=s;best=p;}
+    }
+    seeds.push(best);
+  }
+
+  provinces.forEach(function(p){
+    var bi=0,bd=1e9;
+    for(var i=0;i<seeds.length;i++){
+      var d=Math.hypot(p.x-seeds[i].x,p.y-seeds[i].y);
+      if(d<bd){bd=d;bi=i;}
+    }
+    if(bd<58+rnd(10,-4))p.o=bi;
+  });
+  seeds.forEach(function(s,i){s.o=i;s.capital=true;});
+
+  var realms=[];
+  for(var i=0;i<N_REALMS;i++){
+    var t=traits[i%traits.length];
+    realms.push({
+      id:i,n:realmNames[i],color:colorFor(i),trait:t,alive:true,
+      gold:rnd(330,180),manpower:rnd(120,65),army:rnd(58,30),tech:rnd(1.22,.82),
+      stability:rnd(84,57),prestige:rnd(45,8),warEx:0,income:0,
+      aggression: t==='militarista'?rnd(1.35,1.05):t==='expansionista'?rnd(1.25,.98):rnd(1.0,.45),
+      diplomacy:t==='diplomático'?rnd(1.35,1.05):rnd(1.0,.5),
+      commerce:t==='mercantil'?rnd(1.35,1.05):rnd(1.0,.55),
+      caution:t==='cauteloso'?rnd(1.4,1.1):rnd(1.05,.65),
+      capital:seeds[i].id,kills:0
+    });
+  }
+  return {provinces:provinces,realms:realms};
+}
+
+function reset(){
+  var world=generateWorld();
+  var rel={};
+  for(var i=0;i<N_REALMS;i++)for(var j=i+1;j<N_REALMS;j++)rel[key(i,j)]=Math.round(rnd(50,-30));
+  state={
+    days:0,running:true,speed:1,layer:'political',
+    provinces:world.provinces,realms:world.realms,relations:rel,
+    alliances:new Set(),trade:new Set(),wars:[],campaigns:[],events:[],
+    battles:0,selected:null,prices:goods.map(function(){return rnd(1.55,.7);}),
+    lastEco:0,lastDip:0,lastStrat:0,lastColonize:0,lastRenderSide:0
+  };
+  log('diplo','O equilíbrio continental começou com <b>'+N_REALMS+' Estados soberanos</b>.');
+  renderAllPanels();
+}
+function owned(fid){return state.provinces.filter(function(p){return p.o===fid;});}
+function realm(fid){return state.realms[fid];}
+function relation(a,b){if(a===b)return 100;return state.relations[key(a,b)]||0;}
+function setRelation(a,b,v){if(a!==b)state.relations[key(a,b)]=clamp(v,-100,100);}
+function allied(a,b){return state.alliances.has(key(a,b));}
+function trading(a,b){return state.trade.has(key(a,b));}
+function activeWar(a,b){
+  return state.wars.find(function(w){return !w.ended&&((w.a===a&&w.b===b)||(w.a===b&&w.b===a));});
+}
+function warsOf(fid){return state.wars.filter(function(w){return !w.ended&&(w.a===fid||w.b===fid);});}
+function enemies(fid){
+  var out=[];
+  warsOf(fid).forEach(function(w){out.push(w.a===fid?w.b:w.a);});
+  return out;
+}
+function neighborsOf(fid){
+  var set=new Set();
+  owned(fid).forEach(function(p){
+    p.nei.forEach(function(nid){
+      var o=state.provinces[nid].o;
+      if(o>=0&&o!==fid)set.add(o);
+    });
+  });
+  return Array.from(set);
+}
+function borderProvs(a,b){
+  return owned(a).filter(function(p){
+    return p.nei.some(function(n){return state.provinces[n].o===b;});
+  });
+}
+function frontierTarget(a,b){
+  var list=[];
+  borderProvs(a,b).forEach(function(p){
+    p.nei.forEach(function(nid){
+      var t=state.provinces[nid];
+      if(t.o===b)list.push(t);
+    });
+  });
+  if(!list.length)return null;
+  list.sort(function(x,y){return strategicProvinceValue(y,a)-strategicProvinceValue(x,a);});
+  return list[0];
+}
+function strategicProvinceValue(p,attacker){
+  var v=p.dev*1.3+p.pop*.35+(p.capital?26:0)+p.fort*5;
+  var friendly=p.nei.filter(function(n){return state.provinces[n].o===attacker;}).length;
+  return v+friendly*4+rnd(4,0);
+}
+function power(fid){
+  var r=realm(fid);if(!r||!r.alive)return 0;
+  var prov=owned(fid).length;
+  return (r.army*(.72+r.tech*.35))*(1-r.warEx*.004)+prov*2+r.manpower*.08+r.gold*.012;
+}
+function threatTo(fid,other){
+  var p=power(other)/(power(fid)+1);
+  var border=neighborsOf(fid).indexOf(other)>=0?1.18:1;
+  var hostile=relation(fid,other)<-20?1.18:1;
+  return p*border*hostile;
+}
+function log(type,text){
+  state.events.unshift({day:state.days,type:type,text:text});
+  if(state.events.length>180)state.events.length=180;
+  renderFeed();
+}
+function dateText(){
+  var d=new Date(1444,0,1);d.setDate(d.getDate()+Math.floor(state.days));
+  return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'}).replace('.','');
+}
+function year(){return 1444+Math.floor(state.days/365);}
+
+function economyTick(){
+  state.realms.forEach(function(r){
+    if(!r.alive)return;
+    var ps=owned(r.id);
+    if(!ps.length){eliminate(r.id);return;}
+    var dev=0,pop=0,resValue=0;
+    ps.forEach(function(p){dev+=p.dev;pop+=p.pop;resValue+=state.prices[p.res];});
+    var tradeCount=0;
+    state.trade.forEach(function(k){if(k.split('-').map(Number).indexOf(r.id)>=0)tradeCount++;});
+    var base=dev*.42+pop*.08+resValue*.35;
+    var tradeBonus=tradeCount*(2.8*r.commerce);
+    var warCost=warsOf(r.id).length*r.army*.035;
+    r.income=base+tradeBonus-warCost;
+    r.gold+=r.income;
+    r.manpower+=pop*.016;
+    r.warEx=clamp(r.warEx+(warsOf(r.id).length?1.35:-1.0),0,100);
+    r.stability=clamp(r.stability+rnd(.8,-.7)-r.warEx*.005,15,95);
+
+    var desiredArmy=ps.length*(3.3+(r.trait==='militarista'?1.2:0));
+    if(r.army<desiredArmy&&r.manpower>6&&r.gold>18){
+      var recruit=Math.min(r.manpower*.055,desiredArmy-r.army,5+r.tech*2);
+      r.army+=recruit;r.manpower-=recruit;r.gold-=recruit*1.9;
+    }
+    if(r.gold>120&&Math.random()<.18){
+      var p=pick(ps);
+      p.dev=clamp(p.dev+1,3,20);
+      r.gold-=25;
+    }
+    if(r.gold>160&&Math.random()<.08){
+      r.tech+=.006;r.gold-=38;
+    }
+    if(r.gold>135&&Math.random()<.08){
+      var fp=pick(ps.filter(function(p){return p.fort<3;}));
+      if(fp){fp.fort++;r.gold-=32;}
+    }
+    ps.forEach(function(p){
+      p.pop=clamp(p.pop*(1+rnd(.0025,.0004)),3,40);
+      p.unrest=clamp(p.unrest+rnd(.5,-.65)+(r.stability<40?.35:0),0,100);
+    });
+  });
+
+  for(var g=0;g<goods.length;g++){
+    var supply=0;
+    state.provinces.forEach(function(p){if(p.o>=0&&realm(p.o).alive&&p.res===g)supply+=p.dev;});
+    var target=1.35+(150-supply)*.0016;
+    state.prices[g]=clamp(state.prices[g]*.9+target*.1+rnd(.025,-.025),.5,2.6);
+  }
+}
+
+function colonizeTick(){
+  var order=state.realms.filter(function(r){return r.alive;}).sort(function(a,b){return power(b.id)-power(a.id);});
+  order.forEach(function(r){
+    if(r.gold<45||r.manpower<8)return;
+    var options=[];
+    owned(r.id).forEach(function(p){
+      p.nei.forEach(function(nid){
+        var n=state.provinces[nid];
+        if(n.o===-1&&options.indexOf(n)<0)options.push(n);
+      });
+    });
+    if(!options.length)return;
+    options.sort(function(a,b){
+      return strategicProvinceValue(b,r.id)-strategicProvinceValue(a,r.id);
+    });
+    var chance=(r.trait==='expansionista'?.78:.46)*(warsOf(r.id).length?0.35:1);
+    if(Math.random()<chance){
+      var p=options[0];p.o=r.id;
+      r.gold-=42;r.manpower-=5;r.prestige+=.7;
+      if(Math.random()<.16)log('diplo','<b>'+r.n+'</b> incorporou novas terras de fronteira.');
+    }
+  });
+}
+
+function formTrade(a,b){
+  var k=key(a,b);if(state.trade.has(k)||activeWar(a,b))return;
+  state.trade.add(k);setRelation(a,b,relation(a,b)+7);
+  log('trade','<b>'+realm(a).n+'</b> e <b>'+realm(b).n+'</b> abriram um pacto comercial.');
+}
+function formAlliance(a,b){
+  var k=key(a,b);if(state.alliances.has(k)||activeWar(a,b))return;
+  state.alliances.add(k);setRelation(a,b,relation(a,b)+15);
+  log('diplo','<b>'+realm(a).n+'</b> e <b>'+realm(b).n+'</b> formaram uma aliança.');
+}
+function breakDeals(a,b){
+  var k=key(a,b);
+  if(state.alliances.delete(k))log('diplo','A aliança entre <b>'+realm(a).n+'</b> e <b>'+realm(b).n+'</b> foi dissolvida.');
+  state.trade.delete(k);
+}
+function diplomacyTick(){
+  var alive=state.realms.filter(function(r){return r.alive;});
+  for(var i=0;i<alive.length;i++){
+    for(var j=i+1;j<alive.length;j++){
+      var a=alive[i],b=alive[j],v=relation(a.id,b.id);
+      var delta=rnd(.9,-.9);
+      if(allied(a.id,b.id))delta+=.55;
+      if(trading(a.id,b.id))delta+=.25;
+      if(neighborsOf(a.id).indexOf(b.id)>=0)delta-=.08;
+      if(activeWar(a.id,b.id))delta-=1.5;
+      setRelation(a.id,b.id,v+delta);
+    }
+  }
+
+  alive.forEach(function(a){
+    if(Math.random()>.62)return;
+    var candidates=alive.filter(function(b){return b.id!==a.id&&!activeWar(a.id,b.id);});
+    candidates.sort(function(x,y){
+      var sx=relation(a.id,x.id)+a.diplomacy*12-threatTo(a.id,x.id)*5;
+      var sy=relation(a.id,y.id)+a.diplomacy*12-threatTo(a.id,y.id)*5;
+      return sy-sx;
+    });
+    var b=candidates[0];if(!b)return;
+    var rv=relation(a.id,b.id);
+    if(!trading(a.id,b.id)&&rv>22&&Math.random()<.28*a.commerce)formTrade(a.id,b.id);
+
+    var strongest=neighborsOf(a.id).sort(function(x,y){return power(y)-power(x);})[0];
+    var balancing=strongest!==undefined&&threatTo(a.id,strongest)>1.25;
+    if(!allied(a.id,b.id)&&rv>50&&Math.random()<.12*a.diplomacy*(balancing?1.8:1)){
+      formAlliance(a.id,b.id);
+    }
+    if(allied(a.id,b.id)&&rv<5&&Math.random()<.35)breakDeals(a.id,b.id);
+  });
+}
+
+function warDesire(a,b){
+  var ra=realm(a),rb=realm(b);
+  var ratio=power(a)/(power(b)+1);
+  var rv=relation(a,b);
+  var opportunity=1+rb.warEx*.008+warsOf(b).length*.18;
+  var border=neighborsOf(a).indexOf(b)>=0?1:0;
+  if(!border||allied(a,b)||activeWar(a,b))return 0;
+  var caution=ra.caution;
+  var relationFactor=rv<-50?1.55:rv<-20?1.1:rv<10?.55:.12;
+  var expansion=ra.trait==='expansionista'?1.35:1;
+  var prestigeNeed=ra.prestige<20?1.12:1;
+  return ratio*opportunity*relationFactor*expansion*prestigeNeed*ra.aggression/caution;
+}
+function declareWar(a,b){
+  if(a===b||!realm(a).alive||!realm(b).alive||activeWar(a,b)||allied(a,b))return false;
+  breakDeals(a,b);
+  setRelation(a,b,-100);
+  var w={id:Date.now()+Math.random(),a:a,b:b,start:state.days,score:0,battles:0,ended:false,lastBattle:state.days};
+  state.wars.push(w);
+  log('war','⚔ <b>'+realm(a).n+'</b> declarou guerra a <b>'+realm(b).n+'</b>.');
+
+  var defenders=[];
+  state.realms.forEach(function(r){
+    if(r.alive&&r.id!==a&&r.id!==b&&allied(b,r.id)&&!allied(a,r.id)&&warsOf(r.id).length<2)defenders.push(r.id);
+  });
+  defenders.slice(0,1).forEach(function(x){
+    if(Math.random()<.72){
+      log('war','<b>'+realm(x).n+'</b> honrou a aliança com '+realm(b).n+'.');
+      declareWar(a,x);
+    }
+  });
+  return true;
+}
+function strategicTick(){
+  var alive=state.realms.filter(function(r){return r.alive;});
+  alive.forEach(function(a){
+    if(warsOf(a.id).length>=2)return;
+    var targets=neighborsOf(a.id).filter(function(b){return realm(b).alive&&!allied(a.id,b)&&!activeWar(a.id,b);});
+    if(!targets.length)return;
+    var scored=targets.map(function(b){return {b:b,s:warDesire(a.id,b)};}).sort(function(x,y){return y.s-x.s;});
+    if(scored[0]&&scored[0].s>1.05&&Math.random()<.19*clamp(scored[0].s,0,2.5))declareWar(a.id,scored[0].b);
+  });
+
+  state.wars.filter(function(w){return !w.ended;}).forEach(function(w){
+    if(state.days-w.lastBattle>rnd(42,24)){
+      launchCampaign(w);
+      w.lastBattle=state.days;
+    }
+    var age=state.days-w.start;
+    if(age>210&&(Math.abs(w.score)>34||realm(w.a).warEx>75||realm(w.b).warEx>75)&&Math.random()<.26)makePeace(w);
+    else if(age>720&&Math.random()<.22)makePeace(w);
+  });
+}
+
+function launchCampaign(w){
+  if(!realm(w.a).alive||!realm(w.b).alive){w.ended=true;return;}
+  var attacker,defender;
+  var pa=power(w.a)*(1+rnd(.12,-.12)),pb=power(w.b)*(1+rnd(.12,-.12));
+  if(pa>pb){attacker=w.a;defender=w.b;}else{attacker=w.b;defender=w.a;}
+  if(Math.random()<.35){var tmp=attacker;attacker=defender;defender=tmp;}
+  var target=frontierTarget(attacker,defender);
+  if(!target)return;
+  var source=pick(borderProvs(attacker,defender));
+  if(!source)return;
+  state.campaigns.push({
+    war:w.id,attacker:attacker,defender:defender,from:source.id,to:target.id,
+    start:state.days,duration:rnd(32,18),done:false
+  });
+}
+function resolveCampaign(c){
+  var w=state.wars.find(function(x){return x.id===c.war;});
+  if(!w||w.ended)return;
+  var a=realm(c.attacker),d=realm(c.defender),p=state.provinces[c.to];
+  if(!a.alive||!d.alive||p.o!==c.defender)return;
+  var friendlyBorders=p.nei.filter(function(n){return state.provinces[n].o===c.attacker;}).length;
+  var atk=a.army*(.11+rnd(.07,.01))*a.tech*(1-a.warEx*.004)*(1+friendlyBorders*.08);
+  var def=d.army*(.095+rnd(.07,.01))*d.tech*(1+p.fort*.18)*(1+d.stability*.002);
+  var total=atk+def+1;
+  var lossA=clamp(def/total*a.army*rnd(.12,.06),1,a.army*.22);
+  var lossD=clamp(atk/total*d.army*rnd(.13,.065),1,d.army*.24);
+  a.army-=lossA;d.army-=lossD;a.manpower=Math.max(0,a.manpower-lossA*.25);d.manpower=Math.max(0,d.manpower-lossD*.3);
+  a.warEx=clamp(a.warEx+lossA*.11,0,100);d.warEx=clamp(d.warEx+lossD*.11,0,100);
+  state.battles++;w.battles++;
+
+  var attackWins=atk*rnd(1.13,.9)>def;
+  if(attackWins){
+    p.o=c.attacker;p.unrest=clamp(p.unrest+24,0,100);
+    if(p.capital){
+      p.capital=false;
+      var repl=owned(c.defender).sort(function(x,y){return y.dev-x.dev;})[0];
+      if(repl){repl.capital=true;d.capital=repl.id;}
+    }
+    var swing=6+p.dev+(p.capital?12:0);
+    w.score+=(w.a===c.attacker?1:-1)*swing;
+    a.prestige+=1.5;d.stability-=1.8;
+    log('battle','⚔ <b>'+a.n+'</b> tomou uma província de <b>'+d.n+'</b>.');
+    if(owned(c.defender).length===0)eliminate(c.defender,c.attacker);
+  }else{
+    w.score+=(w.a===c.attacker?-1:1)*(3+p.fort*2);
+    log('battle','🛡 <b>'+d.n+'</b> repeliu uma ofensiva de <b>'+a.n+'</b>.');
+  }
+}
+function makePeace(w){
+  if(w.ended)return;
+  w.ended=true;
+  state.campaigns=state.campaigns.filter(function(c){return c.war!==w.id;});
+  var winner=w.score===0?null:(w.score>0?w.a:w.b);
+  var loser=winner===null?null:(winner===w.a?w.b:w.a);
+  if(winner!==null&&realm(winner).alive){
+    realm(winner).prestige+=5;realm(loser).stability-=3;
+    log('war','☮ <b>'+realm(winner).n+'</b> encerrou a guerra em posição vantajosa contra <b>'+realm(loser).n+'</b>.');
+  }else{
+    log('war','☮ <b>'+realm(w.a).n+'</b> e <b>'+realm(w.b).n+'</b> firmaram paz sem vencedor claro.');
+  }
+  if(realm(w.a))realm(w.a).warEx*=.72;
+  if(realm(w.b))realm(w.b).warEx*=.72;
+  setRelation(w.a,w.b,-52);
+}
+function eliminate(fid,by){
+  var r=realm(fid);if(!r||!r.alive)return;
+  r.alive=false;r.army=0;
+  state.alliances.forEach(function(k){if(k.split('-').map(Number).indexOf(fid)>=0)state.alliances.delete(k);});
+  state.trade.forEach(function(k){if(k.split('-').map(Number).indexOf(fid)>=0)state.trade.delete(k);});
+  state.wars.forEach(function(w){if(!w.ended&&(w.a===fid||w.b===fid))w.ended=true;});
+  log('war','☠ <b>'+r.n+'</b> deixou de existir como Estado soberano'+(by!==undefined?' após ser absorvido por <b>'+realm(by).n+'</b>.':'.'));
+}
+function updateCampaigns(){
+  state.campaigns.forEach(function(c){
+    if(c.done)return;
+    var t=(state.days-c.start)/c.duration;
+    if(t>=1){c.done=true;resolveCampaign(c);}
+  });
+  state.campaigns=state.campaigns.filter(function(c){return !c.done&&state.days-c.start<120;});
+}
+
+function randomEvent(){
+  if(Math.random()>.018)return;
+  var alive=state.realms.filter(function(r){return r.alive;});
+  var r=pick(alive);if(!r)return;
+  var roll=Math.random();
+  if(roll<.25){r.gold+=35;log('trade','Uma safra excepcional elevou a receita de <b>'+r.n+'</b>.');}
+  else if(roll<.5){r.stability=clamp(r.stability-8,0,100);log('diplo','Distúrbios internos reduziram a estabilidade de <b>'+r.n+'</b>.');}
+  else if(roll<.75){r.tech+=.018;log('diplo','<b>'+r.n+'</b> realizou um avanço administrativo e militar.');}
+  else{r.manpower+=18;log('diplo','Um crescimento demográfico fortaleceu <b>'+r.n+'</b>.');}
+}
+
+function update(dt){
+  if(!state.running)return;
+  state.days+=dt/1000*state.speed*2.0;
+  updateCampaigns();
+  if(state.days-state.lastEco>=30){state.lastEco=state.days;economyTick();randomEvent();}
+  if(state.days-state.lastColonize>=55){state.lastColonize=state.days;colonizeTick();}
+  if(state.days-state.lastDip>=75){state.lastDip=state.days;diplomacyTick();}
+  if(state.days-state.lastStrat>=48){state.lastStrat=state.days;strategicTick();}
+}
+
+function hexPath(p){
+  ctx.beginPath();
+  for(var i=0;i<6;i++){
+    var a=Math.PI/3*i;
+    var x=p.x+HEX*Math.cos(a),y=p.y+HEX*Math.sin(a);
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+}
+function econColor(dev){
+  var t=clamp((dev-3)/17,0,1);
+  var g=Math.round(75+t*110),r=Math.round(45+t*65),b=Math.round(55+t*20);
+  return 'rgb('+r+','+g+','+b+')';
+}
+function relationColor(v){
+  if(v>45)return '#4f9d73';
+  if(v<-45)return '#a84f56';
+  return '#777d84';
+}
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  var grad=ctx.createLinearGradient(0,0,0,H);grad.addColorStop(0,'#102a39');grad.addColorStop(1,'#071a25');
+  ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
+
+  state.provinces.forEach(function(p){
+    hexPath(p);
+    var fill='#26333b';
+    if(p.o>=0){
+      if(state.layer==='political')fill=realm(p.o).color;
+      else if(state.layer==='economy')fill=econColor(p.dev);
+      else if(state.layer==='relations'&&state.selected&&state.selected.kind==='realm')fill=relationColor(relation(state.selected.id,p.o));
+      else fill=realm(p.o).color;
+    }
+    ctx.fillStyle=fill;ctx.fill();
+    ctx.strokeStyle='#0b141b';ctx.lineWidth=1;ctx.stroke();
+  });
+
+  state.provinces.forEach(function(p){
+    if(p.o<0)return;
+    p.nei.forEach(function(nid){
+      var n=state.provinces[nid];
+      if(n.o===p.o)return;
+      var dx=n.x-p.x,dy=n.y-p.y,len=Math.hypot(dx,dy),mx=(p.x+n.x)/2,my=(p.y+n.y)/2;
+      if(len===0)return;
+      var px=-dy/len*HEX*.53,py=dx/len*HEX*.53;
+      ctx.strokeStyle='#071019';ctx.lineWidth=3.2;
+      ctx.beginPath();ctx.moveTo(mx-px,my-py);ctx.lineTo(mx+px,my+py);ctx.stroke();
+    });
+  });
+
+  state.provinces.forEach(function(p){
+    if(p.capital&&p.o>=0&&realm(p.o).alive){
+      ctx.fillStyle='#fff2b5';ctx.font='15px Georgia';ctx.textAlign='center';ctx.fillText('★',p.x,p.y+5);
+    }
+  });
+
+  state.campaigns.forEach(function(c){
+    var a=state.provinces[c.from],b=state.provinces[c.to];if(!a||!b)return;
+    var t=clamp((state.days-c.start)/c.duration,0,1);
+    var x=a.x+(b.x-a.x)*t,y=a.y+(b.y-a.y)*t;
+    ctx.strokeStyle=realm(c.attacker).color;ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(x,y);ctx.stroke();
+    ctx.fillStyle='#0a0f14';ctx.strokeStyle=realm(c.attacker).color;ctx.lineWidth=3;
+    ctx.beginPath();ctx.arc(x,y,7,0,Math.PI*2);ctx.fill();ctx.stroke();
+  });
+
+  if(state.selected&&state.selected.kind==='province'){
+    var sp=state.provinces[state.selected.id];
+    if(sp){hexPath(sp);ctx.strokeStyle='#fff6c8';ctx.lineWidth=4;ctx.stroke();}
+  }
+
+  drawRealmLabels();
+}
+function drawRealmLabels(){
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  state.realms.forEach(function(r){
+    if(!r.alive)return;
+    var ps=owned(r.id);if(ps.length<2)return;
+    var sx=0,sy=0;ps.forEach(function(p){sx+=p.x;sy+=p.y;});
+    sx/=ps.length;sy/=ps.length;
+    ctx.font='700 '+clamp(9+Math.sqrt(ps.length)*1.1,10,18)+'px Georgia';
+    ctx.lineWidth=3;ctx.strokeStyle='rgba(4,8,11,.75)';ctx.strokeText(r.n,sx,sy);
+    ctx.fillStyle='#f4f0df';ctx.fillText(r.n,sx,sy);
+  });
+}
+
+function pointInHex(x,y,p){
+  var dx=Math.abs(x-p.x),dy=Math.abs(y-p.y);
+  if(dx>HEX||dy>DY/2)return false;
+  return Math.sqrt(3)*dx+dy<=Math.sqrt(3)*HEX;
+}
+function canvasPos(e){
+  var r=canvas.getBoundingClientRect();
+  return {x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height,rx:e.clientX-r.left,ry:e.clientY-r.top};
+}
+canvas.addEventListener('mousemove',function(e){
+  var m=canvasPos(e),p=null;
+  for(var i=0;i<state.provinces.length;i++){if(pointInHex(m.x,m.y,state.provinces[i])){p=state.provinces[i];break;}}
+  var tip=document.getElementById('tooltip');
+  if(!p){tip.style.display='none';return;}
+  tip.style.display='block';tip.style.left=Math.min(m.rx+14,canvas.clientWidth-175)+'px';tip.style.top=Math.max(6,m.ry-10)+'px';
+  if(p.o<0)tip.innerHTML='<b>Fronteira não reclamada</b><span>desenvolvimento '+p.dev+' · '+goods[p.res]+'</span>';
+  else{
+    var r=realm(p.o);
+    tip.innerHTML='<b>'+r.n+'</b><span>província · dev '+p.dev+' · pop '+Math.round(p.pop)+'k · '+goods[p.res]+'</span>';
+  }
+});
+canvas.addEventListener('mouseleave',function(){document.getElementById('tooltip').style.display='none';});
+canvas.addEventListener('click',function(e){
+  var m=canvasPos(e),p=null;
+  for(var i=0;i<state.provinces.length;i++){if(pointInHex(m.x,m.y,state.provinces[i])){p=state.provinces[i];break;}}
+  if(!p)return;
+  state.selected={kind:'province',id:p.id};
+  renderSelected();
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.toggle('active',b.dataset.tab==='selected');});
+  document.querySelectorAll('.tabpane').forEach(function(x){x.classList.toggle('active',x.id==='selected');});
+});
+
+function renderFeed(){
+  var el=document.getElementById('feed');if(!el||!state)return;
+  el.innerHTML=state.events.slice(0,55).map(function(e){
+    return '<div class="event '+e.type+'"><time>'+Math.floor(e.day)+'d</time>'+e.text+'</div>';
+  }).join('');
+}
+function renderRealmList(){
+  var list=state.realms.slice().sort(function(a,b){
+    if(a.alive!==b.alive)return a.alive?-1:1;
+    return power(b.id)-power(a.id);
+  });
+  document.getElementById('realmList').innerHTML=list.map(function(r){
+    var ps=owned(r.id);
+    return '<div class="realmrow" data-realm="'+r.id+'" style="opacity:'+(r.alive?1:.35)+'">'+
+      '<div class="rhead"><strong style="color:'+r.color+'">'+r.n+'</strong><span class="badge">'+r.trait+'</span></div>'+
+      '<div class="subline"><span>'+ps.length+' prov.</span><span>Poder '+Math.round(power(r.id))+'</span><span>Exército '+Math.round(r.army)+'</span></div>'+
+      '<div class="meters"><div class="meter"><i style="width:'+clamp(r.stability,0,100)+'%;background:#6fc18c"></i></div>'+
+      '<div class="meter"><i style="width:'+clamp(r.warEx,0,100)+'%;background:#e26f76"></i></div></div></div>';
+  }).join('');
+  document.querySelectorAll('.realmrow').forEach(function(row){
+    row.onclick=function(){
+      var rid=Number(row.dataset.realm);state.selected={kind:'realm',id:rid};renderSelected();
+      document.querySelectorAll('.tab').forEach(function(b){b.classList.toggle('active',b.dataset.tab==='selected');});
+      document.querySelectorAll('.tabpane').forEach(function(x){x.classList.toggle('active',x.id==='selected');});
+    };
+  });
+}
+function renderDiplo(){
+  var alive=state.realms.filter(function(r){return r.alive;});
+  var pairs=[];
+  for(var i=0;i<alive.length;i++)for(var j=i+1;j<alive.length;j++){
+    var a=alive[i],b=alive[j],v=relation(a.id,b.id);
+    if(allied(a.id,b.id)||activeWar(a.id,b.id)||neighborsOf(a.id).indexOf(b.id)>=0)pairs.push({a:a,b:b,v:v});
+  }
+  pairs.sort(function(x,y){
+    var sx=activeWar(x.a.id,x.b.id)?1000:allied(x.a.id,x.b.id)?500:Math.abs(x.v);
+    var sy=activeWar(y.a.id,y.b.id)?1000:allied(y.a.id,y.b.id)?500:Math.abs(y.v);
+    return sy-sx;
+  });
+  document.getElementById('diploMatrix').innerHTML='<div class="matrix">'+pairs.slice(0,38).map(function(p){
+    var tags=[];
+    if(activeWar(p.a.id,p.b.id))tags.push('<span class="tag">GUERRA</span>');
+    if(allied(p.a.id,p.b.id))tags.push('<span class="tag">ALIANÇA</span>');
+    if(trading(p.a.id,p.b.id))tags.push('<span class="tag">COMÉRCIO</span>');
+    return '<div class="pair"><div class="pairhead"><span>'+p.a.n+' ↔ '+p.b.n+'</span><b class="relation '+relClass(p.v)+'">'+Math.round(p.v)+'</b></div><div class="tags">'+tags.join('')+'</div></div>';
+  }).join('')+'</div>';
+}
+function renderSelected(){
+  var el=document.getElementById('selectedInfo');
+  if(!state.selected){el.innerHTML='<div class="empty">Clique em uma província ou Estado no mapa.</div>';return;}
+  if(state.selected.kind==='province'){
+    var p=state.provinces[state.selected.id];
+    if(p.o<0){
+      el.innerHTML='<div class="inspect"><h2>Fronteira</h2><div class="owner">terra ainda não reclamada</div><div class="stats"><div class="stat"><span>Desenvolvimento</span><b>'+p.dev+'</b></div><div class="stat"><span>Recurso</span><b>'+goods[p.res]+'</b></div></div></div>';return;
+    }
+    var r=realm(p.o);
+    el.innerHTML='<div class="inspect"><h2>'+r.n+'</h2><div class="owner">província '+(p.capital?'· CAPITAL':'')+'</div>'+
+      '<div class="stats"><div class="stat"><span>Desenvolvimento</span><b>'+p.dev+'</b></div><div class="stat"><span>População</span><b>'+Math.round(p.pop)+'k</b></div>'+
+      '<div class="stat"><span>Recurso</span><b>'+goods[p.res]+'</b></div><div class="stat"><span>Fortificação</span><b>'+p.fort+'</b></div></div>'+
+      '<p>Estado: '+r.trait+'. Poder agregado '+Math.round(power(r.id))+'.</p></div>';
+  }else{
+    var rr=realm(state.selected.id),ps=owned(rr.id),ens=enemies(rr.id);
+    el.innerHTML='<div class="inspect"><h2 style="color:'+rr.color+'">'+rr.n+'</h2><div class="owner">'+rr.trait+' · '+(rr.alive?'Estado soberano':'extinto')+'</div>'+
+      '<div class="stats"><div class="stat"><span>Províncias</span><b>'+ps.length+'</b></div><div class="stat"><span>Exército</span><b>'+Math.round(rr.army)+'</b></div>'+
+      '<div class="stat"><span>Tesouro</span><b>'+Math.round(rr.gold)+'</b></div><div class="stat"><span>Tecnologia</span><b>'+rr.tech.toFixed(2)+'</b></div>'+
+      '<div class="stat"><span>Estabilidade</span><b>'+Math.round(rr.stability)+'</b></div><div class="stat"><span>Exaustão</span><b>'+Math.round(rr.warEx)+'</b></div></div>'+
+      '<p>Renda mensal: '+rr.income.toFixed(1)+'. '+(ens.length?'Em guerra com '+ens.map(function(x){return realm(x).n;}).join(', ')+'.':'Em paz.')+'</p></div>';
+  }
+}
+function renderMarket(){
+  document.getElementById('market').innerHTML=goods.map(function(g,i){
+    var w=clamp(state.prices[i]/2.6*100,5,100);
+    return '<div class="commodity"><span>'+goodSymbols[i]+' '+g+'</span><div class="spark"><i style="width:'+w+'%"></i></div><b>'+state.prices[i].toFixed(2)+'</b></div>';
+  }).join('');
+}
+function renderLegend(){
+  document.getElementById('legend').innerHTML=
+    '<span><i style="background:#26333b"></i>fronteira</span>'+
+    '<span>★ capital</span><span>linhas grossas = fronteiras estatais</span><span>círculo = campanha militar</span>';
+}
+function renderAllPanels(){
+  renderFeed();renderRealmList();renderDiplo();renderSelected();renderMarket();renderLegend();
+}
+function updateTop(){
+  document.getElementById('dateLabel').textContent=dateText();
+  document.getElementById('eraLabel').textContent='Ano '+year();
+  document.getElementById('kpiRealms').textContent=state.realms.filter(function(r){return r.alive;}).length;
+  document.getElementById('kpiWars').textContent=state.wars.filter(function(w){return !w.ended;}).length;
+  document.getElementById('kpiTrade').textContent=state.alliances.size;
+  document.getElementById('kpiBattles').textContent=state.battles;
+  document.getElementById('simState').textContent=state.running?'RODANDO':'PAUSADO';
+}
+function maybeRefreshPanels(){
+  if(state.days-state.lastRenderSide>10){
+    state.lastRenderSide=state.days;renderRealmList();renderDiplo();renderMarket();
+    if(state.selected)renderSelected();
+  }
+}
+document.querySelectorAll('.tab').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('.tab').forEach(function(x){x.classList.toggle('active',x===b);});
+    document.querySelectorAll('.tabpane').forEach(function(x){x.classList.toggle('active',x.id===b.dataset.tab);});
+  });
+});
+document.querySelectorAll('.layer').forEach(function(b){
+  b.addEventListener('click',function(){
+    state.layer=b.dataset.layer;
+    document.querySelectorAll('.layer').forEach(function(x){x.classList.toggle('active',x===b);});
+  });
+});
+document.querySelectorAll('.speed').forEach(function(b){
+  b.addEventListener('click',function(){
+    state.speed=Number(b.dataset.speed);
+    document.querySelectorAll('.speed').forEach(function(x){x.classList.toggle('active',x===b);});
+  });
+});
+document.getElementById('pauseBtn').onclick=function(){
+  state.running=!state.running;
+  this.textContent=state.running?'⏸':'▶';
+  this.classList.toggle('active',state.running);
+};
+document.getElementById('resetBtn').onclick=function(){reset();};
+
+var last=performance.now();
+function frame(now){
+  var dt=Math.min(100,now-last);last=now;
+  update(dt);draw();updateTop();maybeRefreshPanels();
+  requestAnimationFrame(frame);
+}
+
+reset();
+requestAnimationFrame(frame);
 })();
