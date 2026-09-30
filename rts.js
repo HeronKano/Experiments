@@ -404,7 +404,7 @@ function chooseExpansion(fid){
     const hq=baseOf(fid),d=hq?dist(hq,n):1000;
     const nearNodes=state.nodes.filter(x=>dist(x,n)<260).length;
     const danger=en.reduce((m,e)=>Math.min(m,dist(e,n)),9999);
-    const sc=nearNodes*110-danger<220? -500 : nearNodes*110-d*.06+Math.min(danger,700)*.25+rand(0,80);
+    const sc=danger<220 ? -500 : nearNodes*110-d*.06+Math.min(danger,700)*.25+rand(0,80);
     if(sc>score){score=sc;best=n}
   }
   return best;
