@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#080b10">
-<title>Eryndor — Grand Strategy Autônoma</title>
+<title>Eryndor — Grand Strategy Emergente</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="topbar">
-  <div class="brand"><strong>ERYNDOR</strong><span>grand strategy · 28 potências autônomas</span></div>
+  <div class="brand"><strong>ERYNDOR</strong><span>grand strategy emergente · 56 Estados</span></div>
   <div class="timebox"><span id="dateLabel">1 Jan 1444</span><small id="eraLabel">Ano 1444</small></div>
   <div class="controls">
     <button id="pauseBtn" class="control active">⏸</button>
@@ -20,13 +20,19 @@
     <button id="resetBtn" class="control danger">↻</button>
   </div>
 </header>
+
 <main class="layout">
   <section class="mapcard">
     <div class="maptoolbar">
-      <div><strong>Continente de Eryndor</strong><span id="worldStatus">observador — 28 IAs expandem, negociam e guerreiam sem script fixo</span></div>
+      <div>
+        <strong>Continente de Eryndor</strong>
+        <span id="worldStatus">56 economias autônomas competem por riqueza, influência e segurança</span>
+      </div>
       <div class="layers">
         <button class="layer active" data-layer="political">Político</button>
-        <button class="layer" data-layer="economy">Economia</button>
+        <button class="layer" data-layer="development">Desenvolv.</button>
+        <button class="layer" data-layer="wealth">Riqueza</button>
+        <button class="layer" data-layer="infrastructure">Infra</button>
         <button class="layer" data-layer="relations">Relações</button>
       </div>
     </div>
@@ -36,35 +42,41 @@
       <div class="legend" id="legend"></div>
     </div>
   </section>
+
   <aside class="sidebar">
     <section class="panel summary">
       <div class="panelhead"><strong>Visão do mundo</strong><span id="simState">RODANDO</span></div>
       <div class="kpis">
-        <div><span>Estados</span><b id="kpiRealms">28</b></div>
+        <div><span>Estados</span><b id="kpiRealms">56</b></div>
+        <div><span>PIB mundial</span><b id="kpiGdp">0</b></div>
         <div><span>Guerras</span><b id="kpiWars">0</b></div>
-        <div><span>Alianças</span><b id="kpiTrade">0</b></div>
-        <div><span>Batalhas</span><b id="kpiBattles">0</b></div>
+        <div><span>Comércio</span><b id="kpiTrade">0</b></div>
       </div>
     </section>
+
     <section class="panel tabsPanel">
-      <div class="tabs">
+      <div class="tabs five">
         <button class="tab active" data-tab="chronicle">Crônica</button>
-        <button class="tab" data-tab="realms">Estados</button>
+        <button class="tab" data-tab="realms">Ranking</button>
+        <button class="tab" data-tab="economy">Economia</button>
         <button class="tab" data-tab="diplomacy">Diplomacia</button>
-        <button class="tab" data-tab="selected">Inspeção</button>
+        <button class="tab" data-tab="selected">País</button>
       </div>
       <div id="chronicle" class="tabpane active"><div class="feed" id="feed"></div></div>
       <div id="realms" class="tabpane"><div id="realmList"></div></div>
+      <div id="economy" class="tabpane"><div id="economyPanel"></div></div>
       <div id="diplomacy" class="tabpane"><div id="diploMatrix"></div></div>
-      <div id="selected" class="tabpane"><div id="selectedInfo" class="empty">Clique em uma província ou Estado no mapa.</div></div>
+      <div id="selected" class="tabpane"><div id="selectedInfo" class="empty">Clique em um país ou província no mapa.</div></div>
     </section>
+
     <section class="panel tickerPanel">
-      <div class="panelhead"><strong>Economia continental</strong><span>recursos e preços</span></div>
+      <div class="panelhead"><strong>Mercado continental</strong><span>preços dinâmicos</span></div>
       <div class="market" id="market"></div>
     </section>
   </aside>
 </main>
-<footer class="footer">Simulação procedural. Todas as potências são controladas por IA; pause, acelere, clique e acompanhe a história emergente.</footer>
+
+<footer class="footer">Modo observador por padrão. Clique em um país para inspecionar ou assumir seu governo.</footer>
 <script src="game.js"></script>
 </body>
 </html>
