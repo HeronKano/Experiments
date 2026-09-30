@@ -102,7 +102,7 @@ function makeWorld(){
     var doctrine=doctrines[i%doctrines.length];
     realms.push({
       id:i,n:names[i],color:hue(i),alive:true,doctrine:doctrine,
-      treasury:rand(360,180),debt:rand(60,0),tax:.18,tariff:.10,openness:rand(.82,.42),
+      treasury:rand(380,190),debt:rand(38,0),tax:.18,tariff:.10,openness:rand(.86,.48),
       army:rand(52,24),manpower:rand(110,55),stability:rand(86,58),legitimacy:rand(88,55),
       corruption:rand(.28,.06),education:rand(1.2,.45),bureaucracy:rand(1.2,.55),
       tech:{prod:rand(1.12,.84),mil:rand(1.12,.86),admin:rand(1.12,.84)},
@@ -218,7 +218,7 @@ function computeRealmBase(r){
   state.tradePacts.forEach(function(k){if(k.split('-').map(Number).indexOf(r.id)>=0)pactCount++;});
   var warPenalty=warsOf(r.id).length*.12;
   var avgI=ps.length?infra/ps.length:0;
-  r.marketAccess=clamp(.20+r.openness*.42+avgI*.045+pactCount*.035-warPenalty,0.08,1);
+  r.marketAccess=clamp(.58+r.openness*.25+avgI*.025+pactCount*.025-warPenalty,0.35,1);
   prod[5]=industryCap*.62*(.58+r.marketAccess*.42);
   prod[6]=industryCap*.38*(.55+r.marketAccess*.45);
 
@@ -270,11 +270,11 @@ function economyTick(initial){
     var newGdp=(prodValue+commerce)*(0.78+adminEff*.22)*welfare;
     r.gdpPrev=r.gdp||newGdp;r.gdp=newGdp;r.growth=(r.gdp-r.gdpPrev)/(r.gdpPrev+1);
 
-    var revenue=r.gdp*r.tax*.19*adminEff+importValue*r.tariff*.05;
-    var armyCost=r.army*(.085+.025*r.tech.mil);
-    var eduCost=r.pop*r.education*.0055;
-    var adminCost=r.pop*r.bureaucracy*.0035;
-    var infraCost=avgInfra(r.id)*ps.length*.12;
+    var revenue=r.gdp*r.tax*.24*adminEff+importValue*r.tariff*.055;
+    var armyCost=r.army*(.062+.018*r.tech.mil);
+    var eduCost=r.pop*r.education*.0042;
+    var adminCost=r.pop*r.bureaucracy*.0027;
+    var infraCost=avgInfra(r.id)*ps.length*.085;
     var interest=r.debt*(.0045+r.defaults*.0018);
     var costs=armyCost+eduCost+adminCost+infraCost+interest;
     r.income=revenue;r.expenses=costs;
@@ -297,11 +297,11 @@ function economyTick(initial){
     r.tech.admin+=r.education*.00014;
     r.tech.mil+=r.education*.00009;
 
-    if(r.debt>r.gdp*2.8&&Math.random()<.035){
+    if(r.debt>r.gdp*3.5&&Math.random()<.015){
       r.defaults++;r.debt*=.72;r.stability-=9;r.legitimacy-=6;
       log('crisis','<b>'+r.n+'</b> entrou em moratória parcial após uma crise de dívida.');
     }
-    if(r.shortage>.26&&Math.random()<.11){
+    if(r.shortage>.34&&Math.random()<.025){
       r.stability-=4;
       log('crisis','Escassez de alimentos e bens básicos atingiu <b>'+r.n+'</b>.');
     }
@@ -439,7 +439,7 @@ function diplomacyTick(){
       return sy-sx;
     });
     var b=candidates[0];if(!b)return;
-    if(!tradePact(a.id,b.id)&&relation(a.id,b.id)>12&&Math.random()<.24*a.commerce)makeTrade(a.id,b.id,false);
+    if(!tradePact(a.id,b.id)&&relation(a.id,b.id)>5&&Math.random()<.34*a.commerce)makeTrade(a.id,b.id,false);
     var threat=maxThreat(a.id);
     if(!allied(a.id,b.id)&&relation(a.id,b.id)>48&&Math.random()<.08*(1+threat)*a.governance)makeAlliance(a.id,b.id);
   });
