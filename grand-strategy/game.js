@@ -392,7 +392,7 @@ function aiTick(){
     scores.sort(function(a,b){return b.s-a.s;});
     var acts=r.treasury>320?2:1;
     for(var n=0;n<acts;n++){
-      for(var i=0;i<scores.length;i++){if(invest(r,scores[i].k,false)){if(['farm','extract','workshop','infra','education','admin'].indexOf(scores[i].k)>=0&&Math.random()<.055)log('econ','<b>'+r.n+'</b> '+r.lastAction+'.');break;}}
+      for(var i=0;i<scores.length;i++){if(invest(r,scores[i].k,false)){if(['farm','extract','workshop','infra','education','admin'].indexOf(scores[i].k)>=0&&Math.random()<.22)log('econ','<b>'+r.n+'</b> '+r.lastAction+'.');break;}}
     }
   });
 }
@@ -550,11 +550,11 @@ function resolveCampaign(c){
       p.capital=false;var rep=owned(c.d).sort(function(x,y){return y.pop+y.workshop*3-(x.pop+x.workshop*3);})[0];
       if(rep){rep.capital=true;R(c.d).capital=rep.id;}
     }
-    if(Math.random()<.48)log('battle','⚔ <b>'+a.n+'</b> ocupou uma província de <b>'+d.n+'</b>.');
+    if(Math.random()<.16)log('battle','⚔ <b>'+a.n+'</b> ocupou uma província de <b>'+d.n+'</b>.');
     if(!owned(c.d).length)collapseRealm(c.d,c.a);
   }else{
     w.score+=(w.a===c.a?-1:1)*(3+p.fort);
-    if(Math.random()<.38)log('battle','🛡 <b>'+d.n+'</b> conteve uma ofensiva de <b>'+a.n+'</b>.');
+    if(Math.random()<.10)log('battle','🛡 <b>'+d.n+'</b> conteve uma ofensiva de <b>'+a.n+'</b>.');
   }
 }
 function peace(w){
