@@ -1,1 +1,96 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0; url=grand-strategy/"><title>Coroas & Fronteiras</title><script>location.replace('grand-strategy/');</script></head><body><p><a href="grand-strategy/">Abrir Coroas & Fronteiras</a></p></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#081018">
+<title>Frontier Command — RTS</title>
+<link rel="stylesheet" href="rts.css">
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand"><strong>FRONTIER COMMAND</strong><span>RTS de expansão e conquista</span></div>
+    <div class="topstats">
+      <div class="stat"><span>Suprimentos</span><b id="resource">0</b></div>
+      <div class="stat"><span>Unidades</span><b id="unitCount">0</b></div>
+      <div class="stat"><span>Potências</span><b id="aliveCount">5</b></div>
+      <div class="stat"><span>Tempo</span><b id="worldTime">Ano 1</b></div>
+    </div>
+    <div class="topcontrols">
+      <button class="btn" id="pauseBtn" title="Pausar">⏸</button>
+      <button class="btn active" data-speed="1">1×</button>
+      <button class="btn" data-speed="2">2×</button>
+      <button class="btn" data-speed="4">4×</button>
+      <button class="btn danger" id="resetBtn" title="Reiniciar">↻</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="mapwrap">
+      <canvas id="world"></canvas>
+
+      <div class="hud help">
+        <b>Objetivo:</b> destrua os quartéis-generais rivais. Operários coletam cristais automaticamente.
+        No PC: clique para selecionar, botão direito para mover/atacar e roda para zoom.
+        No celular: selecione e use os botões de ordem.
+      </div>
+      <div class="hud toast" id="toast"></div>
+
+      <div class="hud minimap"><canvas id="mini"></canvas></div>
+
+      <div class="endgame" id="endgame">
+        <div class="endcard">
+          <h2 id="endTitle">Fim da guerra</h2>
+          <p id="endText"></p>
+          <button class="btn" id="restartBtn">Jogar novamente</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="sidebar">
+      <section class="panel">
+        <h3>Seleção</h3>
+        <div class="selection" id="selectionInfo"></div>
+      </section>
+
+      <section class="panel">
+        <h3>Comandos</h3>
+        <div class="gridbuttons">
+          <button class="btn" data-mode="select">Selecionar</button>
+          <button class="btn" data-mode="move">Mover</button>
+          <button class="btn" data-mode="attack">Atacar</button>
+          <button class="btn" id="selectArmy">Todo exército</button>
+          <button class="btn" id="trainWorker">+ Operário · 45</button>
+          <button class="btn" id="trainScout">+ Batedor · 55</button>
+          <button class="btn" id="trainSoldier">+ Soldado · 75</button>
+          <button class="btn" data-mode="outpost">Posto · 140</button>
+          <button class="btn wide" data-mode="barracks">Quartel · 160</button>
+        </div>
+        <div class="modehint" id="modeHint"></div>
+      </section>
+
+      <section class="panel">
+        <h3>Potências</h3>
+        <div class="factions" id="factions"></div>
+      </section>
+
+      <section class="panel">
+        <h3>Crônica da guerra</h3>
+        <div class="feed" id="feed"></div>
+      </section>
+
+      <section class="panel">
+        <h3>Mapa</h3>
+        <div class="legend">
+          <span class="key"><i class="symbol" style="background:#b5ea61"></i> recurso</span>
+          <span class="key"><i class="symbol" style="border-radius:50%"></i> tropa</span>
+          <span class="key"><i class="symbol"></i> operário</span>
+        </div>
+      </section>
+    </aside>
+  </main>
+</div>
+<script src="rts.js"></script>
+</body>
+</html>
