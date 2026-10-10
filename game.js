@@ -75,7 +75,7 @@ const f=(n)=>Number(n||0);
 const currency=(v)=>Math.max(0,Math.floor(v));
 const who=(idx)=>s.players[idx];
 function log(msg){s.log.unshift({era:s.era,round:s.round,text:msg});s.log=s.log.slice(0,80)}
-function flash(t){toast=t;setTimeout(()=>{toast='';let n=$('toast');if(n)n.textContent=''},3200)}
+function flash(t){toast=t;let n=$('toast');if(n)n.textContent=toast;setTimeout(()=>{toast='';let n=$('toast');if(n)n.textContent=''},3200)}
 function makeState(mode,human){
  return {version:VERSION,mode,human,era:0,round:1,turn:0,phase:'play',tile:3,
  players:NAMES.map((name,id)=>({id,money:6,influence:5,mandates:0,ideas:[],achievements:[],actions:[]})),
@@ -98,6 +98,7 @@ function goal(pid,id){
 }
 function execute(pid,id,tileIndex,automated=false){
  if(s.phase!=='play'||pid!==s.turn)return false;
+ if(id!=='reorganizar'&&id!=='acordo'&&id!=='exercito'&&id!=='controle'&&!ACTIONS[s.era][pid].some(a=>a.id===id))return false;
  let a=s.tiles[tileIndex];if(!a)return false;
  const P=who(pid); const cost=(money=0,influence=0)=>P.money>=money&&P.influence>=influence;
  const spend=(money=0,influence=0)=>{if(!cost(money,influence))return false;add(pid,'money',-money);add(pid,'influence',-influence);return true};
@@ -125,7 +126,7 @@ function execute(pid,id,tileIndex,automated=false){
  case 'guarda':if(!spend(2))return false;grant(0,2);s.army.force++;s.army.autonomy++;detail='milícia provincial fortalece o aparato armado';break;
  case 'levante':grant(0,3);a.claim+=2;a.tension+=2;world('legitimacy',-2);detail='levante ameaça governo e mobiliza forças provinciais';break;
  case 'provincia':if(!spend(1))return false;grant(0,3);world('social',1);detail='autonomia negociada';break;
- case 'engenho':if(!spend(1))return false;if(a.sugar<1)return false;a.sugar--;grant(4);a.tension++;detail='produção açucareira gera capital e pressão social';break;
+ case 'engenho':if(a.sugar<1||!spend(1))return false;a.sugar--;grant(4);a.tension++;detail='produção açucareira gera capital e pressão social';break;
  case 'exportar':grant(a.sugar>0?3:1);detail='receitas de exportação';break;
  case 'investir':if(!spend(2))return false;grant(0,1);a.infrastructure++;detail='investimento produtivo';break;
  case 'ampliar':if(!spend(1))return false;if(a.sugar<1)return false;a.sugar--;grant(4);a.tension++;detail='engenho ampliado';break;
@@ -142,6 +143,7 @@ function execute(pid,id,tileIndex,automated=false){
  case 'exercito':if(s.era<2||!spend(3))return false;s.army.force+=2;s.army.autonomy++;grant(0,1);detail='Exército fortalecido, mas mais autônomo';break;
  case 'controle':if(s.era<2||!spend(2,1))return false;s.army.autonomy=Math.max(0,s.army.autonomy-2);world('legitimacy',1);detail='controle civil do Exército reforçado';break;
  case 'acordo':if(!spend(2))return false;grant(0,2);world('social',1);detail='articulação e compromisso institucional';break;
+ case 'reorganizar':grant(2);detail='reorganização de recursos; recuperação de capacidade de ação';break;
  default:changed=false;
  }
  if(!changed)return false;
@@ -179,7 +181,7 @@ function botAction(pid){
  const preferred=[['sesmaria','missao','rota','engenho'],['monopolio','colegio','vila','ampliar'],['derrama','redes','bandeira','ouro'],['portos','jornal','guarda','cafe']][s.era][pid];
  let choices=[preferred,...ACTIONS[s.era][pid].map(a=>a.id),'acordo'];
  if(s.era>=2&&s.army.autonomy>=5)choices=['controle',...choices];
- for(let id of choices){if(execute(pid,id,tile,true))return}
+ for(let id of [...choices,'reorganizar']){if(execute(pid,id,tile,true))return}
  // Fallback for resource-strapped positions.
  add(pid,'money',1);log(NAMES[pid]+' reorganiza recursos para voltar a agir.');s.turn=(s.turn+1)%4;if(s.turn===0)onRoundEnd();save();render();
 }
@@ -248,7 +250,7 @@ function placeBid(position,money,influence,mandates,auto=false){
 }
 function resolveDebate(){
  let idx=s.debates.active,topic=DEBATES[idx],scores=topic.positions.map((pos,i)=>{
-   let base=s.debates.bids.filter(b=>b.position===i).reduce((sum,b)=>sum+b.money+2*b.influence+3*b.mandates,0);
+   let base=s.debates.bids.filter(b=>b.position===i).reduce((sum,b)=>sum+b.money+2*b.influence+3*b.mandates+Math.min(3,who(b.pid).ideas.filter(token=>token.pole===pos[1]).length),0);
    return base+militaryVote(idx,pos);
  });
  const highest=Math.max(...scores), winners=scores.map((n,i)=>n===highest?i:-1).filter(i=>i>=0);
@@ -291,7 +293,7 @@ function socialPanel(){
  return '<section class="panel"><div class="panel-title"><div><span class="overline">02 / LEGADOS PERSISTENTES</span><h2>Estado do Brasil</h2></div></div><div class="indicator-group">'+indicator('Coesão social',s.social,10,'#86b6a0')+indicator('Legitimidade do governo',s.legitimacy,10,'#c5b179')+indicator('Mobilização social',s.mobilization,10,'#ad95bb')+'</div><p class="small-muted">As consequências de ações, ocupação e coerção permanecem após a troca de era. Coesão baixa pode produzir crises políticas.</p>'+(s.era>=2?'<div class="army-block"><div class="army-top"><div><span class="overline">INSTITUIÇÃO NÃO JOGÁVEL</span><h3>Exército</h3></div><span class="pill warn">Autônomo</span></div><div class="army-grid">'+stat('Força',s.army.force)+stat('Prestígio',s.army.prestige)+stat('Autonomia',s.army.autonomy)+'</div><p class="small-muted">Se autonomia ≥ 6 e legitimidade ≤ 2, ocorre uma intervenção e a partida termina. Com prestígio, os militares influenciam debates.</p></div>':'<div class="army-upcoming">Exército independente entra em cena na Era III.</div>')+'</section>';
 }
 function turnPanel(){
- const pid=s.turn,P=who(pid),actions=ACTIONS[s.era][pid].concat([{id:'acordo',name:'Articular acordo',desc:'−2 Dinheiro, +2 Influência e +1 coesão social.'}]);
+ const pid=s.turn,P=who(pid),actions=ACTIONS[s.era][pid].concat([{id:'acordo',name:'Articular acordo',desc:'−2 Dinheiro, +2 Influência e +1 coesão social.'},{id:'reorganizar',name:'Reorganizar recursos',desc:'Recupera +2 Dinheiro; não avança objetivo da era.'}]);
  if(s.era>=2)actions.push({id:'exercito',name:'Financiar Exército',desc:'−3 Dinheiro; +2 força e +1 autonomia. Risco futuro.'},{id:'controle',name:'Defender controle civil',desc:'−2 Dinheiro, −1 Influência; −2 autonomia e +1 legitimidade.'});
  return '<section class="panel action-panel"><div class="panel-title"><div><span class="overline">03 / AÇÕES DE FACÇÃO</span><h2>Seu turno</h2></div><span class="turn-flag" style="--player:'+COLORS[pid]+'">'+NAMES[pid]+'</span></div><p class="small-muted">Escolha uma região no mapa, depois uma ação. Cada facção realiza uma ação por rodada. Objetivo da era: <b>'+GOALS[s.era][pid]+'</b>.</p><div class="actions">'+actions.map(a=>'<button class="action '+(selectedAction===a.id?'picked':'')+'" data-do="choose" data-id="'+a.id+'"><strong>'+a.name+'</strong><span>'+a.desc+'</span></button>').join('')+'</div><div class="action-footer"><p><b>Ação selecionada:</b> '+(actions.find(a=>a.id===selectedAction)?.name||'Nenhuma')+' · <b>Região:</b> '+area().name+'</p><button class="primary" data-do="act" '+(!selectedAction?'disabled':'')+'>Executar ação →</button></div><p class="small-muted">A maioria dos custos e bônus foi criada para teste de equilíbrio. Se faltar recurso, outra ação deve ser escolhida.</p></section>';
 }
@@ -309,7 +311,7 @@ function debateOverview(){
 }
 function debateVote(){
  let D=DEBATES[s.debates.active],pid=s.debates.bidder,p=who(pid);
- return '<section class="panel feature-panel"><span class="overline">VOTAÇÃO '+(s.debates.used.length+1)+' / 10</span><h2>'+D.title+'</h2><p>'+D.hint+'</p>'+politicalScore()+'<div class="debate-player"><span class="dot" style="background:'+COLORS[pid]+'"></span> Aposta de <b>'+NAMES[pid]+'</b> · '+p.money+' Dinheiro · '+p.influence+' Influência · '+p.mandates+' mandatos</div><div class="positions">'+D.positions.map((opt,i)=>'<label class="position"><input type="radio" name="position" value="'+i+'" '+(i===0?'checked':'')+'><span><strong>'+opt[0]+'</strong><small>Polo: '+POLE_INFO[opt[1]][0]+'</small></span></label>').join('')+'</div><div class="bid-grid">'+bidControl('Dinheiro','bidMoney',p.money,1)+bidControl('Influência','bidInfluence',p.influence,2)+bidControl('Mandatos de era','bidMandates',p.mandates,3)+'</div><div class="bid-total">Poder total desta aposta: <strong id="bidTotal">0</strong> <small>(moeda ×1 + influência ×2 + mandato ×3)</small></div><button class="primary wide" data-do="bid">Comprometer recursos e passar →</button><p class="small-muted">As apostas dos demais ficam ocultas até a resolução. Quem perde não recebe recursos de volta. Votos de posições iguais são somados.</p></section>';
+ return '<section class="panel feature-panel"><span class="overline">VOTAÇÃO '+(s.debates.used.length+1)+' / 10</span><h2>'+D.title+'</h2><p>'+D.hint+'</p>'+politicalScore()+'<div class="debate-player"><span class="dot" style="background:'+COLORS[pid]+'"></span> Aposta de <b>'+NAMES[pid]+'</b> · '+p.money+' Dinheiro · '+p.influence+' Influência · '+p.mandates+' mandatos</div><div class="positions">'+D.positions.map((opt,i)=>'<label class="position"><input type="radio" name="position" value="'+i+'" '+(i===0?'checked':'')+'><span><strong>'+opt[0]+'</strong><small>Polo: '+POLE_INFO[opt[1]][0]+'</small></span></label>').join('')+'</div><div class="bid-grid">'+bidControl('Dinheiro','bidMoney',p.money,1)+bidControl('Influência','bidInfluence',p.influence,2)+bidControl('Mandatos de era','bidMandates',p.mandates,3)+'</div><div class="bid-total">Poder total desta aposta: <strong id="bidTotal">0</strong> <small>(moeda ×1 + influência ×2 + mandato ×3; Ideia Absorvida dá até +3 na sua posição)</small></div><button class="primary wide" data-do="bid">Comprometer recursos e passar →</button><p class="small-muted">As apostas dos demais ficam ocultas até a resolução. Quem perde não recebe recursos de volta. Votos de posições iguais são somados.</p></section>';
 }
 function bidControl(name,id,max,mult){return '<label class="bid-control"><span>'+name+' <b id="'+id+'Out">0</b> / '+max+'</span><input type="range" id="'+id+'" value="0" min="0" max="'+max+'" data-bid="1"></label>'}
 function endPanel(){
