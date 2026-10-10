@@ -4,6 +4,12 @@ const VERSION='0.1.0';
 const KEY='brasil-em-disputa-v01';
 const NAMES=['Coroa','Igreja / Intelectuais','Sertanistas','Produtores'];
 const COLORS=['#dbb46e','#a4a3cf','#76baa0','#de9472'];
+const ROLE_LABELS=[
+ ['Coroa portuguesa','Ordens religiosas','Sertanistas','Senhores de engenho'],
+ ['Administração colonial','Instituições religiosas','Milícias e sertanistas','Produtores açucareiros'],
+ ['Coroa e Fisco','Redes religiosas e letradas','Bandeirantes e poder local','Mineradores'],
+ ['Coroa e governo central','Intelectuais e imprensa','Elites provinciais','Proprietários e cafeicultores']
+];
 const ERAS=[
  {name:'Implantação colonial',years:'1530–1600',hint:'Sesmarias, missões, engenhos e primeiras disputas territoriais.'},
  {name:'Expansão da colônia',years:'1600–1690',hint:'Expansão produtiva, ocupação do interior e novas alianças.'},
@@ -198,7 +204,7 @@ function botCycle(){
   while(s.phase==='debates'&&s.debates.active!==null&&s.debates.bidder!==s.human&&s.debates.bidder<4){
     let idx=s.debates.bidder, debate=DEBATES[s.debates.active];
     let favorite=debate.positions.findIndex(opt=>opt[1]===idx);
-    if(favorite<0)favorite=idx%debate.positions.length;
+    if(favorite<0){let min=Math.min(...debate.positions.map(p=>s.debates.wins[p[1]]));favorite=debate.positions.findIndex(p=>s.debates.wins[p[1]]===min);}
     placeBid(favorite,Math.min(2,who(idx).money),Math.min(2,who(idx).influence),Math.min(1,who(idx).mandates),true);
   }
  }
@@ -257,7 +263,7 @@ function resolveDebate(){
  let chosen=winners.length===1?winners[0]:null;
  if(chosen!==null&&highest>0){
   let pole=topic.positions[chosen][1];s.debates.wins[pole]++;
-  s.debates.bids.filter(b=>b.position===chosen).forEach(b=>{
+  s.debates.bids.filter(b=>b.position===chosen&&(b.money+b.influence+b.mandates)>0).forEach(b=>{
    let token={debate:idx,pole};who(b.pid).ideas.push(token);
   });
   log('DEBATE — '+topic.title+': venceu "'+topic.positions[chosen][0]+'", polo '+POLE_INFO[pole][0]+'.');
@@ -274,7 +280,7 @@ function startScreen(){
 function stat(label,val,cls=''){return '<div class="stat '+cls+'"><span>'+label+'</span><b>'+val+'</b></div>'}
 function playersPanel(){
  let curr=s.phase==='play'?s.turn:(s.phase==='war'?s.war.idx:(s.debates.active!==null?s.debates.bidder:s.debates.proposer));
- return '<section class="players-strip">'+s.players.map((p,i)=>'<div class="player-chip '+(i===curr?'active':'')+'" style="--player:'+COLORS[i]+'"><div class="chip-head"><span class="dot"></span><strong>'+NAMES[i]+'</strong>'+(s.mode==='solo'&&i!==s.human?'<small>BOT</small>':'')+'</div><div class="chip-stats"><span>◈ '+p.money+' dinheiro</span><span>✧ '+p.influence+' influência</span><span>◆ '+p.mandates+' mandatos</span></div><span class="chip-goal">'+GOALS[Math.min(s.era,3)][i]+'</span></div>').join('')+'</section>';
+ return '<section class="players-strip">'+s.players.map((p,i)=>'<div class="player-chip '+(i===curr?'active':'')+'" style="--player:'+COLORS[i]+'"><div class="chip-head"><span class="dot"></span><strong title="'+NAMES[i]+'">'+ROLE_LABELS[Math.min(s.era,3)][i]+'</strong>'+(s.mode==='solo'&&i!==s.human?'<small>BOT</small>':'')+'</div><div class="chip-stats"><span>◈ '+p.money+' dinheiro</span><span>✧ '+p.influence+' influência</span><span>◆ '+p.mandates+' mandatos</span><span>✦ '+p.ideas.length+' ideias</span></div><span class="chip-goal">'+(p.achievements.includes(s.era)?'✓ Objetivo cumprido — ':'Meta: ')+GOALS[Math.min(s.era,3)][i]+'</span></div>').join('')+'</section>';
 }
 function indicator(label,v,max,accent=''){return '<div class="indicator"><div class="ind-row"><span>'+label+'</span><strong>'+v+'/'+max+'</strong></div><div class="meter"><i style="width:'+minmax(100*v/max,0,100)+'%;background:'+accent+'"></i></div></div>'}
 function tileCard(t,i){
@@ -295,7 +301,7 @@ function socialPanel(){
 function turnPanel(){
  const pid=s.turn,P=who(pid),actions=ACTIONS[s.era][pid].concat([{id:'acordo',name:'Articular acordo',desc:'−2 Dinheiro, +2 Influência e +1 coesão social.'},{id:'reorganizar',name:'Reorganizar recursos',desc:'Recupera +2 Dinheiro; não avança objetivo da era.'}]);
  if(s.era>=2)actions.push({id:'exercito',name:'Financiar Exército',desc:'−3 Dinheiro; +2 força e +1 autonomia. Risco futuro.'},{id:'controle',name:'Defender controle civil',desc:'−2 Dinheiro, −1 Influência; −2 autonomia e +1 legitimidade.'});
- return '<section class="panel action-panel"><div class="panel-title"><div><span class="overline">03 / AÇÕES DE FACÇÃO</span><h2>Seu turno</h2></div><span class="turn-flag" style="--player:'+COLORS[pid]+'">'+NAMES[pid]+'</span></div><p class="small-muted">Escolha uma região no mapa, depois uma ação. Cada facção realiza uma ação por rodada. Objetivo da era: <b>'+GOALS[s.era][pid]+'</b>.</p><div class="actions">'+actions.map(a=>'<button class="action '+(selectedAction===a.id?'picked':'')+'" data-do="choose" data-id="'+a.id+'"><strong>'+a.name+'</strong><span>'+a.desc+'</span></button>').join('')+'</div><div class="action-footer"><p><b>Ação selecionada:</b> '+(actions.find(a=>a.id===selectedAction)?.name||'Nenhuma')+' · <b>Região:</b> '+area().name+'</p><button class="primary" data-do="act" '+(!selectedAction?'disabled':'')+'>Executar ação →</button></div><p class="small-muted">A maioria dos custos e bônus foi criada para teste de equilíbrio. Se faltar recurso, outra ação deve ser escolhida.</p></section>';
+ return '<section class="panel action-panel"><div class="panel-title"><div><span class="overline">03 / AÇÕES DE FACÇÃO</span><h2>Seu turno</h2></div><span class="turn-flag" style="--player:'+COLORS[pid]+'">'+ROLE_LABELS[s.era][pid]+'</span></div><p class="small-muted">Escolha uma região no mapa, depois uma ação. Cada facção realiza uma ação por rodada. Objetivo da era: <b>'+GOALS[s.era][pid]+'</b>.</p><div class="actions">'+actions.map(a=>'<button class="action '+(selectedAction===a.id?'picked':'')+'" data-do="choose" data-id="'+a.id+'"><strong>'+a.name+'</strong><span>'+a.desc+'</span></button>').join('')+'</div><div class="action-footer"><p><b>Ação selecionada:</b> '+(actions.find(a=>a.id===selectedAction)?.name||'Nenhuma')+' · <b>Região:</b> '+area().name+'</p><button class="primary" data-do="act" '+(!selectedAction?'disabled':'')+'>Executar ação →</button></div><p class="small-muted">A maioria dos custos e bônus foi criada para teste de equilíbrio. Se faltar recurso, outra ação deve ser escolhida.</p></section>';
 }
 function warPanel(){
  const pid=s.war.idx;
